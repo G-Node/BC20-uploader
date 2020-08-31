@@ -76,11 +76,13 @@ const Form = `
 									<input type="file" id="poster" name="poster" accept="application/pdf" required>
 									<span class="help">Poster or slides</span>
 								</div>
-								<div class="inline field ">
-									<label for="video">Video</label>
-									<input type="file" id="video" name="video" accept="video/*">
-									<span class="help">Short poster presentation video</span>
-								</div>
+								{{if .videos}}
+									<div class="inline field ">
+										<label for="video">Video</label>
+										<input type="file" id="video" name="video" accept="video/*">
+										<span class="help">Short poster presentation video</span>
+									</div>
+								{{end}}
 								<div class="inline required field ">
 									<label for="passcode">Passcode</label>
 									<input type="password" id="passcode" name="passcode" value="" autofocus required>

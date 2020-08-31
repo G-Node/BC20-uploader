@@ -191,7 +191,11 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, nil); err != nil {
+	formOpts := map[string]interface{}{
+		"videos": uploader.Config.Videos,
+	}
+
+	if err := tmpl.Execute(w, formOpts); err != nil {
 		log.Printf("Failed to render form: %v", err)
 	}
 }
