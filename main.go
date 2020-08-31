@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,16 +17,142 @@ import (
 
 	"github.com/G-Node/tonic/templates"
 	"github.com/G-Node/tonic/tonic/web"
+	"gopkg.in/yaml.v2"
 )
 
+var (
+	appname string = "uploader"
+	build   string
+	commit  string
+	verstr  string
+)
+
+type Config struct {
+	// Port to listen on
+	Port uint16
+	// File containing user info with passwords
+	UsersFile string
+	// True if video upload is enabled
+	Videos bool
+}
+
+func defaultConfig() *Config {
+	return &Config{
+		Port:      3000,
+		UsersFile: "userlist.json",
+		Videos:    false,
+	}
+}
+
+func readConfig(configFileName string) *Config {
+	configFile, err := os.Open(configFileName)
+	if err != nil {
+		log.Printf("[os.Open] Error reading config file %q: %s", configFileName, err.Error())
+		os.Exit(1)
+	}
+	defer configFile.Close()
+
+	data, err := ioutil.ReadAll(configFile)
+	if err != nil {
+		log.Printf("[ioutil.ReadAll] Error reading config file %q: %s", configFileName, err.Error())
+		os.Exit(1)
+	}
+
+	config := new(Config)
+	if err := yaml.Unmarshal(data, config); err != nil {
+		log.Printf("[yaml.Unmarshall] Error reading config file (%q): %s", configFileName, err.Error())
+		os.Exit(1)
+	}
+	return config
+}
+
+// writeConfig writes the default configuration values to the specified file.
+func writeConfig(cfgFileName string) {
+	// using fmt.Print for error messages here since it's run interactively and
+	// the log-style formatting with timestamps makes it noisy.
+	cfgYml, err := yaml.Marshal(defaultConfig())
+	if err != nil {
+		fmt.Printf("Error marshalling default config: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	cfgFile, err := os.Create(cfgFileName)
+	if err != nil {
+		fmt.Printf("Error creating config file: %s\n", err.Error())
+		os.Exit(1)
+	}
+	defer cfgFile.Close()
+
+	if _, err := cfgFile.Write(cfgYml); err != nil {
+		fmt.Printf("Error writing default config: %s\n", err.Error())
+		os.Exit(1)
+	}
+}
+
+func prompt(msg string) string {
+	var response string
+	fmt.Printf("%s: ", msg)
+	fmt.Scanln(&response)
+	return response
+}
+
+func init() {
+	if build == "" {
+		build = "(dev)"
+		commit = "???"
+	}
+
+	verstr = fmt.Sprintf("%s build %s [%s]", appname, build, commit)
+}
+
 func main() {
-	log.Println("Starting")
+	log.Print(verstr)
+	help := flag.Bool("help", false, "help")
+	writeConfigFlag := flag.Bool("write-config", false, "write default configuration to file (use --config to specify file location)")
+	configFile := flag.String("config", "config", "config file")
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if *writeConfigFlag {
+		if _, err := os.Stat(*configFile); err == nil {
+		PROMPT:
+			for {
+				resp := prompt(fmt.Sprintf("File %q already exists. Overwite? [yN]", *configFile))
+				switch resp {
+				case "": // no response; treat as no
+					fallthrough
+				case "N": // case insensitive match
+					fallthrough
+				case "n":
+					fmt.Println("Cancelled")
+					os.Exit(0)
+				case "Y": // case insensitive match
+					fallthrough
+				case "y":
+					break PROMPT
+				default:
+					continue
+				}
+			}
+
+		}
+		fmt.Printf("Writing default configuration to %q\n", *configFile)
+		writeConfig(*configFile)
+		os.Exit(0)
+	}
+
+	log.Printf("Loading configuration from %q", *configFile)
+	config := readConfig(*configFile)
 	srv := web.New()
 	srv.Router.HandleFunc("/", renderForm).Methods("GET")
 	srv.Router.HandleFunc("/submit", submit).Methods("POST")
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	srv.Start()
-	log.Println("Ready to engage")
+	log.Printf("Listening on port %d", config.Port)
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
 	<-sigchan
