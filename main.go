@@ -201,43 +201,75 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	log.Print("Submission received")
+	err := r.ParseMultipartForm(1048576) // 1 MiB max mem
 	if err != nil {
-		log.Printf("Failed to parse form: %v", err)
+		// 500
+		log.Printf("Failed to parse form: %v", err.Error())
+		return
 	}
 	postValues := r.PostForm
 
-	for key, value := range postValues {
-		log.Printf("%s: %s", key, value)
+	passcode := postValues.Get("passcode")
+	if passcode == "" {
+		// 401
+		log.Printf("ERROR: empty passcode")
+		return
 	}
+	user, err := uploader.getUserInfo(passcode)
+	if err != nil {
+		// Check error message if unauthorised or server error and return appropriate response
+		log.Printf("ERROR: %v", err.Error())
+		return
+	}
+
+	log.Printf("User %q", user.Name)
+
+	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
+	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) {
+		ext := filepath.Ext(header.Filename)
+		fname := fmt.Sprintf("%s_%s%s", user.Session, strings.ReplaceAll(user.Name, " ", "_"), ext) // TODO: Sanitize names
+		os.MkdirAll("uploads", 0777)
+		log.Printf("Writing file %q", fname)
+		if err := saveFile(file, filepath.Join(uploader.Config.UploadDirectory, fname)); err != nil {
+			log.Printf("ERROR: %v", err.Error())
+			return
+		}
+	}
+
+	// Save poster pdf
 	posterFile, posterHeader, err := r.FormFile("poster")
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
 		return
 	}
-	log.Printf("Poster filename: %s", posterHeader.Filename)
+	saveUploadedFile(posterFile, posterHeader)
 
+	if uploader.Config.Videos {
+		// Save video file
+		videoFile, videoHeader, err := r.FormFile("video")
+		if err != nil {
+			log.Printf("ERROR: %v", err.Error())
+			return
+		}
+		saveUploadedFile(videoFile, videoHeader)
+	}
+}
+
+func (uploader *Uploader) getUserInfo(passcode string) (*BCUser, error) {
 	users, err := loadUserList(uploader.Config.UsersFile)
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
-		return
+		return nil, err
 	}
 
-	fname := ""
 	for _, user := range users {
-		if user.Passcode == postValues.Get("passcode") {
-			fname = fmt.Sprintf("%s_%s.pdf", user.Session, strings.ReplaceAll(user.Name, " ", "_")) // TODO: Sanitize names
+		if user.Passcode == passcode {
+			return &user, nil
 		}
 	}
-	if fname == "" {
-		log.Print("Unauthorised!!!")
-		return
-	}
-	os.MkdirAll("uploads", 0777)
-	if err := saveFile(posterFile, filepath.Join(uploader.Config.UploadDirectory, fname)); err != nil {
-		log.Printf("ERROR: %v", err.Error())
-		return
-	}
+	return nil, fmt.Errorf("Passcode did not match")
+
 }
 
 func saveFile(file multipart.File, target string) error {
