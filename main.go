@@ -108,6 +108,24 @@ func init() {
 	verstr = fmt.Sprintf("%s build %s [%s]", appname, build, commit)
 }
 
+// Uploader is the main service struct.
+type Uploader struct {
+	Config *Config
+	Web    *web.Server
+}
+
+func NewUploader(cfg *Config) *Uploader {
+	uploader := new(Uploader)
+	uploader.Config = cfg
+	// TODO: Use configured port when tonic.Web supports it
+	srv := web.New()
+	srv.Router.HandleFunc("/", uploader.renderForm).Methods("GET")
+	srv.Router.HandleFunc("/submit", uploader.submit).Methods("POST")
+	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+	uploader.Web = srv
+	return uploader
+}
+
 func main() {
 	log.Print(verstr)
 	help := flag.Bool("help", false, "help")
@@ -150,19 +168,16 @@ func main() {
 
 	log.Printf("Loading configuration from %q", *configFile)
 	config := readConfig(*configFile)
-	srv := web.New()
-	srv.Router.HandleFunc("/", renderForm).Methods("GET")
-	srv.Router.HandleFunc("/submit", submit).Methods("POST")
-	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
-	srv.Start()
+	uploader := NewUploader(config)
+	uploader.Web.Start()
 	log.Printf("Listening on port %d", config.Port)
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
 	<-sigchan
-	srv.Stop()
+	uploader.Web.Stop()
 }
 
-func renderForm(w http.ResponseWriter, r *http.Request) {
+func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.New("layout")
 	tmpl, err := tmpl.Parse(Layout)
 	if err != nil {
@@ -181,7 +196,7 @@ func renderForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func submit(w http.ResponseWriter, r *http.Request) {
+func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Printf("Failed to parse form: %v", err)
@@ -198,7 +213,7 @@ func submit(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Poster filename: %s", posterHeader.Filename)
 
-	users, err := loadUserList("./userlist.json")
+	users, err := loadUserList(uploader.Config.UsersFile)
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
 		return
@@ -215,7 +230,7 @@ func submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	os.MkdirAll("uploads", 0777)
-	if err := saveFile(posterFile, filepath.Join("uploads", fname)); err != nil {
+	if err := saveFile(posterFile, filepath.Join(uploader.Config.UploadDirectory, fname)); err != nil {
 		log.Printf("ERROR: %v", err.Error())
 		return
 	}
