@@ -30,6 +30,8 @@ var (
 type Config struct {
 	// Port to listen on
 	Port uint16
+	// Directory for saving uploaded files
+	UploadDirectory string
 	// File containing user info with passwords
 	UsersFile string
 	// True if video upload is enabled
@@ -38,9 +40,10 @@ type Config struct {
 
 func defaultConfig() *Config {
 	return &Config{
-		Port:      3000,
-		UsersFile: "userlist.json",
-		Videos:    false,
+		Port:            3000,
+		UploadDirectory: "uploads",
+		UsersFile:       "userlist.json",
+		Videos:          false,
 	}
 }
 
