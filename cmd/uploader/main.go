@@ -245,13 +245,14 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 
 	submittedData := map[string]interface{}{
 		"UserData": user,
+		"PDFPath":  posterPath,
 		"VideoURL": videoURL,
 	}
 	success(w, submittedData)
 }
 
 func (uploader *Uploader) getUserInfo(passcode string) (*BCPoster, error) {
-	users, err := loadUserList(uploader.Config.UsersFile)
+	users, err := loadUserList(uploader.Config.PostersInfoFile)
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
 		return nil, err

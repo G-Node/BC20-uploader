@@ -15,7 +15,7 @@ type Config struct {
 	// Directory for saving uploaded files
 	UploadDirectory string
 	// File containing user info with passwords
-	UsersFile string
+	PostersInfoFile string
 	// True if video upload is enabled
 	Videos bool
 	// Number of file versions to keep
@@ -26,7 +26,7 @@ func defaultConfig() *Config {
 	return &Config{
 		Port:            3000,
 		UploadDirectory: "uploads",
-		UsersFile:       "userlist.json",
+		PostersInfoFile:       "posters.json",
 		Videos:          false,
 		KeepVersions:    5,
 	}
