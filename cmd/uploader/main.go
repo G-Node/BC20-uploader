@@ -34,6 +34,8 @@ type Config struct {
 	UsersFile string
 	// True if video upload is enabled
 	Videos bool
+	// Number of file versions to keep
+	KeepVersions int
 }
 
 func defaultConfig() *Config {
@@ -42,6 +44,7 @@ func defaultConfig() *Config {
 		UploadDirectory: "uploads",
 		UsersFile:       "userlist.json",
 		Videos:          false,
+		KeepVersions:    5,
 	}
 }
 
@@ -59,7 +62,7 @@ func readConfig(configFileName string) *Config {
 		os.Exit(1)
 	}
 
-	config := new(Config)
+	config := defaultConfig() // set defaults first
 	if err := yaml.Unmarshal(data, config); err != nil {
 		log.Printf("[yaml.Unmarshall] Error reading config file (%q): %s", configFileName, err.Error())
 		os.Exit(1)
@@ -194,9 +197,8 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func renameExistingFiles(path string) {
+func renameExistingFiles(path string, nversions int) {
 	log.Printf("Checking for older versions of %s", path)
-	nversions := 5
 	ext := filepath.Ext(path)
 	basename := strings.TrimSuffix(path, ext)
 
@@ -271,7 +273,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		fname := fmt.Sprintf("%s%s", fileBasename, ext)
 		log.Printf("Writing file %q", fname)
 		targetPath := filepath.Join(uploader.Config.UploadDirectory, fname)
-		renameExistingFiles(targetPath)
+		renameExistingFiles(targetPath, uploader.Config.KeepVersions)
 		if err := saveFile(file, targetPath); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, fmt.Sprintf("File upload (%s) failed", ext))
@@ -303,7 +305,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	if videoURL != "" {
 		fname := fmt.Sprintf("%s.url", fileBasename)
 		urlTargetPath := filepath.Join(uploader.Config.UploadDirectory, fname)
-		renameExistingFiles(urlTargetPath)
+		renameExistingFiles(urlTargetPath, uploader.Config.KeepVersions)
 		urlfile, err := os.Create(urlTargetPath)
 		if err != nil {
 			log.Printf("ERROR: %v", err.Error())
