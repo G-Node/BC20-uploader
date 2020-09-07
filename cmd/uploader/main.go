@@ -12,10 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
-	"text/template"
 
-	"github.com/G-Node/tonic/templates"
 	"github.com/G-Node/tonic/tonic/web"
 	"gopkg.in/yaml.v2"
 )
@@ -181,16 +178,9 @@ func main() {
 }
 
 func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.New("layout")
-	tmpl, err := tmpl.Parse(Layout)
+	tmpl, err := PrepareTemplate(Form)
 	if err != nil {
-		ErrorResponse(w, http.StatusInternalServerError, "Internal error: Please contact an administrator")
-		return
-	}
-	tmpl, err = tmpl.Parse(Form)
-
-	if err != nil {
-		ErrorResponse(w, http.StatusInternalServerError, "Internal error: Please contact an administrator")
+		failure(w, http.StatusInternalServerError, nil, "Internal error: Please contact an administrator")
 		return
 	}
 
@@ -209,6 +199,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// 500
 		log.Printf("Failed to parse form: %v", err.Error())
+		failure(w, http.StatusInternalServerError, nil, "An internal error occurred.")
 		return
 	}
 	postValues := r.PostForm
@@ -217,18 +208,20 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	if passcode == "" {
 		// 401
 		log.Printf("ERROR: empty passcode")
+		failure(w, http.StatusUnauthorized, nil, "Empty passcode")
 		return
 	}
 	user, err := uploader.getUserInfo(passcode)
 	if err != nil {
 		// Check error message if unauthorised or server error and return appropriate response
 		log.Printf("ERROR: %v", err.Error())
+		failure(w, http.StatusUnauthorized, nil, "Unauthorised: Incorrect passcode")
 		return
 	}
 
-	log.Printf("User %q", user.Name)
+	log.Printf("User %q", user.Authors)
 
-	fileBasename := fmt.Sprintf("%s_%s", user.Session, strings.ReplaceAll(user.Name, " ", "_")) // TODO: Sanitize names
+	fileBasename := user.ID
 	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
 	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) {
 		ext := filepath.Ext(header.Filename)
@@ -236,6 +229,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Writing file %q", fname)
 		if err := saveFile(file, filepath.Join(uploader.Config.UploadDirectory, fname)); err != nil {
 			log.Printf("ERROR: %v", err.Error())
+			failure(w, http.StatusInternalServerError, nil, fmt.Sprintf("File upload (%s) failed", ext))
 			return
 		}
 	}
@@ -244,6 +238,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	posterFile, posterHeader, err := r.FormFile("poster")
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
+		failure(w, http.StatusInternalServerError, nil, "Poster upload failed")
 		return
 	}
 	saveUploadedFile(posterFile, posterHeader)
@@ -253,6 +248,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		videoFile, videoHeader, err := r.FormFile("video")
 		if err != nil {
 			log.Printf("ERROR: %v", err.Error())
+			failure(w, http.StatusInternalServerError, nil, "Video upload failed")
 			return
 		}
 		saveUploadedFile(videoFile, videoHeader)
@@ -264,15 +260,23 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		urlfile, err := os.Create(filepath.Join(uploader.Config.UploadDirectory, fname))
 		if err != nil {
 			log.Printf("ERROR: %v", err.Error())
+			failure(w, http.StatusInternalServerError, nil, "Form submission failed")
 			return
 		}
 		defer urlfile.Close()
 		log.Printf("Writing file %q", fname)
 		if _, err := urlfile.WriteString(videoURL); err != nil {
 			log.Printf("ERROR: %v", err.Error())
+			failure(w, http.StatusInternalServerError, nil, "Form submission failed")
 			return
 		}
 	}
+
+	submittedData := map[string]interface{}{
+		"UserData": user,
+		"VideoURL": videoURL,
+	}
+	success(w, submittedData)
 }
 
 func (uploader *Uploader) getUserInfo(passcode string) (*BCUser, error) {
@@ -320,38 +324,14 @@ func saveFile(file multipart.File, target string) error {
 	return nil
 }
 
-func ErrorResponse(w http.ResponseWriter, status int, message string) {
-	w.WriteHeader(status)
-
-	tmpl := template.New("layout")
-	tmpl, err := tmpl.Parse(templates.Layout)
-	if err != nil {
-		tmpl = template.New("content")
-	}
-	tmpl, err = tmpl.Parse(templates.Fail)
-	if err != nil {
-		w.Write([]byte(message))
-		return
-	}
-	errinfo := struct {
-		StatusCode int
-		StatusText string
-		Message    string
-	}{
-		status,
-		http.StatusText(status),
-		message,
-	}
-	if err := tmpl.Execute(w, &errinfo); err != nil {
-		log.Printf("Error rendering fail page: %v", err)
-	}
-}
-
 type BCUser struct {
-	Name     string
-	Session  string
-	Title    string
-	Passcode string
+	Session        string
+	AbstractNumber string `json:"abstract_number"`
+	Authors        string
+	Title          string
+	Topic          string
+	ID             string
+	Passcode       string
 }
 
 func loadUserList(fname string) ([]BCUser, error) {

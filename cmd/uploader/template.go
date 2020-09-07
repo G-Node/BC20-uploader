@@ -11,11 +11,11 @@ const Layout = `
 		<link rel="stylesheet" href="/assets/semantic-2.3.1.min.css">
 		<link rel="stylesheet" href="/assets/gogs.css">
 		<link rel="stylesheet" href="/assets/custom.css">
-		<title>Project creator</title>
+		<title>BC20 Poster Submission</title>
 		<meta name="twitter:card" content="summary" />
 		<meta name="twitter:site" content="@gnode" />
 		<meta name="twitter:title" content="GIN Valid"/>
-		<meta name="twitter:description" content="G-Node GIN Validation service"/>
+		<meta name="twitter:description" content="BC20 Poster Submission"/>
 		<meta name="twitter:image" content="/assets/favicon.png" />
 	</head>
 	<body>
@@ -25,7 +25,7 @@ const Layout = `
 					<div class="ui grid">
 						<div class="column">
 							<div class="ui top secondary menu">
-								<a class="item brand" href="https://gin.g-node.org/">
+								<a class="item brand" href="https://bc20.g-node.org">
 									<img class="ui mini image" src="/assets/favicon.png">
 								</a>
 							</div>
@@ -67,41 +67,101 @@ const Form = `
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
 							<h3 class="ui top attached header">
-								(DEMO) BC20 poster session upload
+								(DEMO) BC20 Poster Submission
 							</h3>
 							<div class="ui attached segment">
 								<div class="inline required field">
 									<label for="poster">Poster (PDF)</label>
 									<input type="file" id="poster" name="poster" accept="application/pdf" required>
 									<span class="help">Poster or slides</span>
-								</div>
-								{{if .videos}}
-									<div class="inline field">
-										<label for="video">Video</label>
-										<input type="file" id="video" name="video" accept="video/*">
-										<span class="help">Short poster presentation video</span>
-									</div>
-								{{end}}
-								<div class="inline field">
-									<label for="video_url">Video URL</label>
-									<input type="url" id="video_url" name="video_url">
-									<span class="help">Link to short poster presentation video</span>
-								</div>
-								<div class="inline required field ">
-									<label for="passcode">Passcode</label>
-									<input type="password" id="passcode" name="passcode" value="" autofocus required>
-									<span class="help">You should have received a passcode in the instruction email</span>
-								</div>
-								<div class="inline field">
-									<label></label>
-									<button class="ui green button">Submit</button>
-								</div>
 							</div>
+							{{if .videos}}
+								<div class="inline field">
+									<label for="video">Video</label>
+									<input type="file" id="video" name="video" accept="video/*">
+									<span class="help">Short poster presentation video</span>
+								</div>
+							{{end}}
+							<div class="inline field">
+								<label for="video_url">Video URL</label>
+								<input type="url" id="video_url" name="video_url">
+								<span class="help">Link to short poster presentation video</span>
+							</div>
+							<div class="inline required field ">
+								<label for="passcode">Passcode</label>
+								<input type="password" id="passcode" name="passcode" value="" autofocus required>
+								<span class="help">You should have received a passcode in the instruction email</span>
+							</div>
+							<div class="inline field">
+								<label></label>
+								<button class="ui green button">Submit</button>
+							</div>
+						</div>
 						</form>
 					</div>
 				</div>
 			</div>
 {{ end }}
+`
+const SuccessTmpl = `
+{{ define "content" }}
+			<div class="home middle very relaxed page grid" id="main">
+				<div class="ui container wide centered column doi">
+					<div class="column center">
+						<h1>BC20 poster upload service</h1>
+					</div>
+					<div class="ui info message" id="infotable">
+						<div id="infobox">
+							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
+							<p>Please review it carefully and <strong><a href="mailto:something@example.org">contact us</a></strong> if there are any issues.</p>
+						</div>
+					</div>
+					<hr>
+					{{with .UserData}}
+					<div class="doi title">
+						<h1>{{.Title}}</h1>
+						{{.Authors}}
+						<p><strong>Session {{.Session}}</strong> | {{.Topic}} | {{.AbstractNumber}}</p>
+					</div>
+					<hr>
+
+					<h3>Abstract</h3>
+					<p>NO ABSTRACT YET</p>
+					{{end}}
+
+					<div><a href="">Poster PDF</a></div>
+					{{if .VideoURL}}
+						<div><a href="{{.VideoURL}}">Poster presentation video</a></div>
+					{{end}}
+
+					<hr>
+				</div>
+			</div>
+		</div>
+{{end}}
+`
+
+const FailureTmpl = `
+{{ define "content" }}
+			<div class="home middle very relaxed page grid" id="main">
+				<div class="ui container wide centered column doi">
+					<div class="column center">
+						<h1>BC20 poster upload service</h1>
+					</div>
+					<div class="ui error message" id="infotable">
+						<div id="infobox">
+							<p>The poster submission failed<p>
+
+							<p>{{.Message}}</p>
+
+							<p>Please <strong><a href="mailto:something@example.org">contact us</a></strong> if there are any issues.</p>
+						</div>
+					</div>
+					<hr>
+				</div>
+			</div>
+		</div>
+{{end}}
 `
 
 // vim: ft=gohtmltmpl
