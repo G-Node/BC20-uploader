@@ -250,7 +250,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	success(w, submittedData)
 }
 
-func (uploader *Uploader) getUserInfo(passcode string) (*BCUser, error) {
+func (uploader *Uploader) getUserInfo(passcode string) (*BCPoster, error) {
 	users, err := loadUserList(uploader.Config.UsersFile)
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
@@ -295,7 +295,7 @@ func saveFile(file multipart.File, target string) error {
 	return nil
 }
 
-type BCUser struct {
+type BCPoster struct {
 	Session        string
 	AbstractNumber string `json:"abstract_number"`
 	Authors        string
@@ -305,7 +305,7 @@ type BCUser struct {
 	Passcode       string
 }
 
-func loadUserList(fname string) ([]BCUser, error) {
+func loadUserList(fname string) ([]BCPoster, error) {
 	file, err := os.Open(fname)
 	if err != nil {
 		return nil, err
@@ -317,7 +317,7 @@ func loadUserList(fname string) ([]BCUser, error) {
 		return nil, err
 	}
 
-	users := make([]BCUser, 0, 100)
+	users := make([]BCPoster, 0, 100)
 	if err := json.Unmarshal(fileData, &users); err != nil {
 		return nil, err
 	}
