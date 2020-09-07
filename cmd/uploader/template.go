@@ -13,8 +13,8 @@ const Layout = `
 		<link rel="stylesheet" href="/assets/custom.css">
 		<title>BC20 Poster Submission</title>
 		<meta name="twitter:card" content="summary" />
-		<meta name="twitter:site" content="@gnode" />
-		<meta name="twitter:title" content="GIN Valid"/>
+		<meta name="twitter:site" content="@nncn_germany" />
+		<meta name="twitter:title" content="BC20 Poster Submission"/>
 		<meta name="twitter:description" content="BC20 Poster Submission"/>
 		<meta name="twitter:image" content="/assets/favicon.png" />
 	</head>
@@ -27,6 +27,8 @@ const Layout = `
 							<div class="ui top secondary menu">
 								<a class="item brand" href="https://bc20.g-node.org">
 									<img class="ui mini image" src="/assets/favicon.png">
+									<a class="item" href="http://www.bernstein-conference.de/">Conference Website</a>
+									<a class="item" href="mailto:test@example.org">Contact</a>
 								</a>
 							</div>
 						</div>
