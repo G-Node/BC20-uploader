@@ -81,8 +81,12 @@ const Form = `
 							</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
 
-							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, rather than an individual solution, we offer the following alternative: Please upload your video in MP4-format here, until Friday, Sep 25, 1 pm CEST:
-							<a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a>. Label your video-file: <code>yourposter#_lastname_video</code></p>
+							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, rather than an individual solution, we offer the following alternative:
+							<ul>
+								<li>Please upload your video in MP4-format here, until Friday, Sep 25, 1 pm CEST: <a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a></li>
+								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
+							</ul>
+							</p>
 							<h3 class="ui top attached header">
 								BC20 Poster Submission Form
 							</h3>
