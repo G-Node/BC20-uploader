@@ -2,7 +2,7 @@
 FROM golang:alpine AS binbuilder
 
 # Build dependencies
-RUN apk --no-cache --no-progress add gcc musl-dev
+RUN apk --no-cache --no-progress add gcc musl-dev make
 
 RUN go version
 COPY ./go.mod ./go.sum /uploader/
@@ -12,7 +12,7 @@ WORKDIR /uploader
 RUN go mod download
 
 COPY . /uploader/
-RUN go build -o /build/uploader /uploader
+RUN go build -o /build/uploader /uploader/cmd/uploader
 
 ### ============================ ###
 
