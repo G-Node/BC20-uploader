@@ -121,7 +121,7 @@ const SuccessTmpl = `
 					<div class="doi title">
 						<h1>{{.Title}}</h1>
 						{{.Authors}}
-						<p><strong>Session {{.Session}}</strong> | {{.Topic}} | {{.AbstractNumber}}</p>
+						<p><strong>Session {{.Session}}</strong> | {{.AbstractNumber}} | {{.Topic}}</p>
 					</div>
 					<hr>
 
