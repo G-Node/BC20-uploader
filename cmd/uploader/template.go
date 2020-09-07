@@ -63,13 +63,28 @@ const Layout = `
 
 const Form = `
 {{ define "content" }}
+			<div class="body">
+				<div class="ui middle very relaxed page grid">
+					<div class="column">
+
+					</div>
+				</div>
+			</div>
 			<div class="ginform">
 				<div class="ui middle very relaxed page grid">
 					<div class="column">
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
+							<p>Please upload your PDF and video URL until <strong>Sunday, Sep 27, 2020, 8 pm CEST</strong> using the form below.
+							You should have received a password in the instruction email.
+							Before the deadline is reached you will be able to access this form and exchange your PDF and URL.
+							</p>
+							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
+
+							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, rather than an individual solution, we offer the following alternative: Please upload your video in MP4-format here, until Friday, Sep 25, 1 pm CEST:
+							<a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a> Label your video-file: “yourposter#_lastname_video”</p>
 							<h3 class="ui top attached header">
-								BC20 Poster Submission
+								BC20 Poster Submission Form
 							</h3>
 							<div class="ui attached segment">
 								<div class="inline required field">
@@ -90,9 +105,9 @@ const Form = `
 								<span class="help">Link to short poster presentation video</span>
 							</div>
 							<div class="inline required field ">
-								<label for="passcode">Passcode</label>
+								<label for="passcode">Password</label>
 								<input type="password" id="passcode" name="passcode" value="" autofocus required>
-								<span class="help">You should have received a passcode in the instruction email</span>
+								<span class="help">You should have received a password in the instruction email</span>
 							</div>
 							<div class="inline field">
 								<label></label>
