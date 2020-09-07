@@ -128,12 +128,12 @@ const SuccessTmpl = `
 					<hr>
 
 					<h3>Abstract</h3>
-					<p>NO ABSTRACT YET</p>
+					<p>{{.Abstract}}</p>
 					{{end}}
 
-					<div><a href="">Poster PDF</a></div>
+					<div><a href="{{.PDFPath}}">Poster PDF</a></div>
 					{{if .VideoURL}}
-						<div><a href="{{.VideoURL}}">Poster presentation video</a></div>
+						<div>Poster presentation video: <a href="{{.VideoURL}}">{{.VideoURL}}</a></div>
 					{{end}}
 
 					<hr>

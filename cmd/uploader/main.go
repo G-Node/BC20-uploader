@@ -47,6 +47,7 @@ func NewUploader(cfg *Config) *Uploader {
 	srv.Router.HandleFunc("/", uploader.renderForm).Methods("GET")
 	srv.Router.HandleFunc("/submit", uploader.submit).Methods("POST")
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+	srv.Router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(cfg.UploadDirectory))))
 	uploader.Web = srv
 	return uploader
 }
@@ -190,7 +191,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 
 	fileBasename := user.ID
 	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
-	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) {
+	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) string {
 		ext := filepath.Ext(header.Filename)
 		fname := fmt.Sprintf("%s%s", fileBasename, ext)
 		log.Printf("Writing file %q", fname)
@@ -199,8 +200,9 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		if err := saveFile(file, targetPath); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, fmt.Sprintf("File upload (%s) failed", ext))
-			return
+			return ""
 		}
+		return targetPath
 	}
 
 	// Save poster pdf
@@ -210,7 +212,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		failure(w, http.StatusInternalServerError, nil, "Poster upload failed")
 		return
 	}
-	saveUploadedFile(posterFile, posterHeader)
+	posterPath := saveUploadedFile(posterFile, posterHeader)
 
 	if uploader.Config.Videos {
 		// Save video file
