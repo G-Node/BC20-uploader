@@ -131,9 +131,9 @@ const SuccessTmpl = `
 					<p>{{.Abstract}}</p>
 					{{end}}
 
-					<div><a href="{{.PDFPath}}">Poster PDF</a></div>
+					<div><a href="{{.PDFPath}}">Poster PDF</a> (click to review)</div>
 					{{if .VideoURL}}
-						<div>Poster presentation video: <a href="{{.VideoURL}}">{{.VideoURL}}</a></div>
+						<div><a href="{{.VideoURL}}">{{.VideoURL}}</a>: Poster presentation video</div>
 					{{end}}
 
 					<hr>
