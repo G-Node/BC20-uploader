@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 
 	"github.com/G-Node/tonic/tonic/web"
 	"gopkg.in/yaml.v2"
@@ -33,6 +34,8 @@ type Config struct {
 	UsersFile string
 	// True if video upload is enabled
 	Videos bool
+	// Number of file versions to keep
+	KeepVersions int
 }
 
 func defaultConfig() *Config {
@@ -41,6 +44,7 @@ func defaultConfig() *Config {
 		UploadDirectory: "uploads",
 		UsersFile:       "userlist.json",
 		Videos:          false,
+		KeepVersions:    5,
 	}
 }
 
@@ -58,7 +62,7 @@ func readConfig(configFileName string) *Config {
 		os.Exit(1)
 	}
 
-	config := new(Config)
+	config := defaultConfig() // set defaults first
 	if err := yaml.Unmarshal(data, config); err != nil {
 		log.Printf("[yaml.Unmarshall] Error reading config file (%q): %s", configFileName, err.Error())
 		os.Exit(1)
@@ -193,6 +197,47 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func renameExistingFiles(path string, nversions int) {
+	log.Printf("Checking for older versions of %s", path)
+	ext := filepath.Ext(path)
+	basename := strings.TrimSuffix(path, ext)
+
+	fileExists := func(fname string) bool {
+		if _, err := os.Stat(fname); err == nil {
+			return true
+		}
+		return false
+	}
+
+	nthFilename := func(n int) string {
+		return fmt.Sprintf("%s-v%d%s", basename, n, ext)
+	}
+
+	// delete ver = nversions - 1 (oldest to keep) if it exists
+	oldestVer := nthFilename(nversions - 1)
+	if fileExists(oldestVer) {
+		log.Printf("Deleting old file %s", oldestVer)
+		os.Remove(oldestVer)
+	}
+
+	for n := nversions - 2; n > 0; n-- {
+		// for each one that exists, move it up one version
+		nthVer := nthFilename(n)
+		if fileExists(nthVer) {
+			nthPlusOne := nthFilename(n + 1)
+			log.Printf("Renaming old file %s -> %s", nthVer, nthPlusOne)
+			os.Rename(nthVer, nthPlusOne)
+		}
+	}
+
+	// check for base file (no version suffix)
+	if fileExists(path) {
+		oneVer := nthFilename(1)
+		log.Printf("Renaming old file %s -> %s", path, oneVer)
+		os.Rename(path, oneVer)
+	}
+}
+
 func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	log.Print("Submission received")
 	err := r.ParseMultipartForm(1048576) // 1 MiB max mem
@@ -227,7 +272,9 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		ext := filepath.Ext(header.Filename)
 		fname := fmt.Sprintf("%s%s", fileBasename, ext)
 		log.Printf("Writing file %q", fname)
-		if err := saveFile(file, filepath.Join(uploader.Config.UploadDirectory, fname)); err != nil {
+		targetPath := filepath.Join(uploader.Config.UploadDirectory, fname)
+		renameExistingFiles(targetPath, uploader.Config.KeepVersions)
+		if err := saveFile(file, targetPath); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, fmt.Sprintf("File upload (%s) failed", ext))
 			return
@@ -257,7 +304,9 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	videoURL := r.PostForm.Get("video_url")
 	if videoURL != "" {
 		fname := fmt.Sprintf("%s.url", fileBasename)
-		urlfile, err := os.Create(filepath.Join(uploader.Config.UploadDirectory, fname))
+		urlTargetPath := filepath.Join(uploader.Config.UploadDirectory, fname)
+		renameExistingFiles(urlTargetPath, uploader.Config.KeepVersions)
+		urlfile, err := os.Create(urlTargetPath)
 		if err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, "Form submission failed")

@@ -13,8 +13,8 @@ const Layout = `
 		<link rel="stylesheet" href="/assets/custom.css">
 		<title>BC20 Poster Submission</title>
 		<meta name="twitter:card" content="summary" />
-		<meta name="twitter:site" content="@gnode" />
-		<meta name="twitter:title" content="GIN Valid"/>
+		<meta name="twitter:site" content="@nncn_germany" />
+		<meta name="twitter:title" content="BC20 Poster Submission"/>
 		<meta name="twitter:description" content="BC20 Poster Submission"/>
 		<meta name="twitter:image" content="/assets/favicon.png" />
 	</head>
@@ -25,8 +25,10 @@ const Layout = `
 					<div class="ui grid">
 						<div class="column">
 							<div class="ui top secondary menu">
-								<a class="item brand" href="https://bc20.g-node.org">
+								<a class="item brand" href="https://bc20-posters.g-node.org">
 									<img class="ui mini image" src="/assets/favicon.png">
+									<a class="item" href="http://www.bernstein-conference.de/">Conference Website</a>
+									<a class="item" href="mailto:bernstein.conference@fz-juelich.de">Contact</a>
 								</a>
 							</div>
 						</div>
@@ -67,7 +69,7 @@ const Form = `
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
 							<h3 class="ui top attached header">
-								(DEMO) BC20 Poster Submission
+								BC20 Poster Submission
 							</h3>
 							<div class="ui attached segment">
 								<div class="inline required field">
@@ -113,7 +115,7 @@ const SuccessTmpl = `
 					<div class="ui info message" id="infotable">
 						<div id="infobox">
 							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
-							<p>Please review it carefully and <strong><a href="mailto:something@example.org">contact us</a></strong> if there are any issues.</p>
+							<p>Please review it carefully and <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> if there are any issues.</p>
 						</div>
 					</div>
 					<hr>
@@ -154,7 +156,7 @@ const FailureTmpl = `
 
 							<p>{{.Message}}</p>
 
-							<p>Please <strong><a href="mailto:something@example.org">contact us</a></strong> if there are any issues. <a href="/">Click here</a> to return to the form and try again.</p>
+							<p>Please <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> if there are any issues. <a href="/">Click here</a> to return to the form and try again.</p>
 						</div>
 					</div>
 					<hr>
