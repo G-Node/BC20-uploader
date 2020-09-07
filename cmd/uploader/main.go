@@ -217,8 +217,9 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	posterPath := saveUploadedFile(posterFile, posterHeader)
 	posterHash, err := sha1File(posterPath)
 	if err != nil {
-		log.Printf("Failed to has file upload %q: %s", posterPath, err.Error())
+		log.Printf("Failed to hash file upload %q: %s", posterPath, err.Error())
 	}
+	log.Printf("PDF file saved: %s (%s)", posterPath, posterHash)
 
 	if uploader.Config.Videos {
 		// Save video file
@@ -228,7 +229,8 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 			failure(w, http.StatusInternalServerError, nil, "Video upload failed")
 			return
 		}
-		saveUploadedFile(videoFile, videoHeader)
+		videoPath := saveUploadedFile(videoFile, videoHeader)
+		log.Printf("Video file saved: %s", videoPath)
 	}
 
 	videoURL := r.PostForm.Get("video_url")
@@ -243,12 +245,12 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer urlfile.Close()
-		log.Printf("Writing file %q", fname)
 		if _, err := urlfile.WriteString(videoURL); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, "Form submission failed")
 			return
 		}
+		log.Printf("URL file saved: %s (%s)", fname, videoURL)
 	}
 
 	submittedData := map[string]interface{}{
