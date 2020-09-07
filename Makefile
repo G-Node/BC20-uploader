@@ -28,4 +28,4 @@ uninstall:
 	rm $(INSTLOC)/$(APP)
 
 $(BUILDLOC)/$(APP): $(SOURCES)
-	go build -trimpath $(LDFLAGS) $(GCFLAGS) -o $(BUILDLOC)/$(APP) .
+	go build -trimpath $(LDFLAGS) $(GCFLAGS) -o $(BUILDLOC)/$(APP) ./cmd/uploader
