@@ -150,11 +150,11 @@ const FailureTmpl = `
 					</div>
 					<div class="ui error message" id="infotable">
 						<div id="infobox">
-							<p>The poster submission failed<p>
+							<p>The poster submission failed.<p>
 
 							<p>{{.Message}}</p>
 
-							<p>Please <strong><a href="mailto:something@example.org">contact us</a></strong> if there are any issues.</p>
+							<p>Please <strong><a href="mailto:something@example.org">contact us</a></strong> if there are any issues. <a href="/">Click here</a> to return to the form and try again.</p>
 						</div>
 					</div>
 					<hr>
