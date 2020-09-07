@@ -69,7 +69,7 @@ const Form = `
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
 							<h3 class="ui top attached header">
-								(DEMO) BC20 Poster Submission
+								BC20 Poster Submission
 							</h3>
 							<div class="ui attached segment">
 								<div class="inline required field">
