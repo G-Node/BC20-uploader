@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -213,6 +215,10 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	posterPath := saveUploadedFile(posterFile, posterHeader)
+	posterHash, err := sha1File(posterPath)
+	if err != nil {
+		log.Printf("Failed to has file upload %q: %s", posterPath, err.Error())
+	}
 
 	if uploader.Config.Videos {
 		// Save video file
@@ -246,9 +252,10 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	submittedData := map[string]interface{}{
-		"UserData": user,
-		"PDFPath":  posterPath,
-		"VideoURL": videoURL,
+		"UserData":   user,
+		"PDFPath":    posterPath,
+		"VideoURL":   videoURL,
+		"PosterHash": posterHash,
 	}
 	success(w, submittedData)
 }
@@ -296,6 +303,25 @@ func saveFile(file multipart.File, target string) error {
 		}
 	}
 	return nil
+}
+
+func sha1File(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hasher := sha1.New()
+
+	if _, err := io.Copy(hasher, file); err != nil {
+		return "", err
+	}
+
+	hash := hasher.Sum(nil)
+	encoded := hex.EncodeToString(hash[:])
+	return encoded, nil
+
 }
 
 type BCPoster struct {

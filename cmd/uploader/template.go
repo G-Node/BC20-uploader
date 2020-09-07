@@ -127,12 +127,15 @@ const SuccessTmpl = `
 					<div class="column center">
 						<h1>BC20 poster upload service</h1>
 					</div>
+
 					<div class="ui info message" id="infotable">
 						<div id="infobox">
 							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
 							<p>Please review it carefully and <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> if there are any issues.</p>
 						</div>
 					</div>
+					<div><b>NOTE: Please print this page or save the following for verification. You may be asked to produce the following key to verify your upload.</b></div>
+					<div>Poster upload verification: {{.PosterHash}}</div>
 					<hr>
 					{{with .UserData}}
 					<div class="doi title">
@@ -150,7 +153,6 @@ const SuccessTmpl = `
 					{{if .VideoURL}}
 						<div><a href="{{.VideoURL}}">{{.VideoURL}}</a>: Poster presentation video</div>
 					{{end}}
-
 					<hr>
 				</div>
 			</div>
