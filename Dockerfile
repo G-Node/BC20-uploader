@@ -24,7 +24,6 @@ WORKDIR /uploader
 # Copy binary and resources into runner image
 COPY --from=binbuilder /build/uploader /bin/uploader
 COPY ./assets /uploader/assets
-COPY ./userlist.json /uploader/userlist.json
 
 ENTRYPOINT /bin/uploader
 EXPOSE 3000
