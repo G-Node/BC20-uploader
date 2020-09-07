@@ -170,6 +170,7 @@ func main() {
 
 	log.Printf("Loading configuration from %q", *configFile)
 	config := readConfig(*configFile)
+	log.Printf("%+v", config)
 	uploader := NewUploader(config)
 	uploader.Web.Start()
 	log.Printf("Listening on port %d", config.Port)
@@ -266,6 +267,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer urlfile.Close()
+		log.Printf("Writing file %q", fname)
 		if _, err := urlfile.WriteString(videoURL); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			return
