@@ -253,7 +253,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	success(w, submittedData)
 }
 
-func (uploader *Uploader) getUserInfo(passcode string) (*BCPoster, error) {
+func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
 	users, err := loadUserList(uploader.Config.PostersInfoFile)
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
@@ -261,7 +261,7 @@ func (uploader *Uploader) getUserInfo(passcode string) (*BCPoster, error) {
 	}
 
 	for _, user := range users {
-		if user.Passcode == passcode {
+		if user.UploadKey == key {
 			return &user, nil
 		}
 	}
@@ -305,7 +305,8 @@ type BCPoster struct {
 	Title          string
 	Topic          string
 	ID             string
-	Passcode       string
+	UploadKey      string `json:"upload_key"`
+	Abstract       string
 }
 
 func loadUserList(fname string) ([]BCPoster, error) {
