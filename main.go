@@ -66,6 +66,8 @@ func readConfig(configFileName string) *Config {
 		log.Printf("[yaml.Unmarshall] Error reading config file (%q): %s", configFileName, err.Error())
 		os.Exit(1)
 	}
+	// create upload directory (if it doesn't exist)
+	os.MkdirAll(config.UploadDirectory, 0777)
 	return config
 }
 
@@ -225,11 +227,11 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("User %q", user.Name)
 
+	fileBasename := fmt.Sprintf("%s_%s", user.Session, strings.ReplaceAll(user.Name, " ", "_")) // TODO: Sanitize names
 	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
 	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) {
 		ext := filepath.Ext(header.Filename)
-		fname := fmt.Sprintf("%s_%s%s", user.Session, strings.ReplaceAll(user.Name, " ", "_"), ext) // TODO: Sanitize names
-		os.MkdirAll("uploads", 0777)
+		fname := fmt.Sprintf("%s%s", fileBasename, ext)
 		log.Printf("Writing file %q", fname)
 		if err := saveFile(file, filepath.Join(uploader.Config.UploadDirectory, fname)); err != nil {
 			log.Printf("ERROR: %v", err.Error())
@@ -253,6 +255,21 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		saveUploadedFile(videoFile, videoHeader)
+	}
+
+	videoURL := r.PostForm.Get("video_url")
+	if videoURL != "" {
+		fname := fmt.Sprintf("%s.url", fileBasename)
+		urlfile, err := os.Create(filepath.Join(uploader.Config.UploadDirectory, fname))
+		if err != nil {
+			log.Printf("ERROR: %v", err.Error())
+			return
+		}
+		defer urlfile.Close()
+		if _, err := urlfile.WriteString(videoURL); err != nil {
+			log.Printf("ERROR: %v", err.Error())
+			return
+		}
 	}
 }
 

@@ -71,18 +71,23 @@ const Form = `
 								(DEMO) BC20 poster session upload
 							</h3>
 							<div class="ui attached segment">
-								<div class="inline required field ">
+								<div class="inline required field">
 									<label for="poster">Poster (PDF)</label>
 									<input type="file" id="poster" name="poster" accept="application/pdf" required>
 									<span class="help">Poster or slides</span>
 								</div>
 								{{if .videos}}
-									<div class="inline field ">
+									<div class="inline field">
 										<label for="video">Video</label>
 										<input type="file" id="video" name="video" accept="video/*">
 										<span class="help">Short poster presentation video</span>
 									</div>
 								{{end}}
+								<div class="inline field">
+									<label for="video_url">Video URL</label>
+									<input type="url" id="video_url" name="video_url">
+									<span class="help">Link to short poster presentation video</span>
+								</div>
 								<div class="inline required field ">
 									<label for="passcode">Passcode</label>
 									<input type="password" id="passcode" name="passcode" value="" autofocus required>
