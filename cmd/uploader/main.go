@@ -222,7 +222,7 @@ func renameExistingFiles(path string, nversions int) {
 
 	for n := nversions - 2; n > 0; n-- {
 		// for each one that exists, move it up one version
-		nthVer := fmt.Sprintf("%s-v%d%s", basename, n, ext)
+		nthVer := nthFilename(n)
 		if fileExists(nthVer) {
 			nthPlusOne := nthFilename(n + 1)
 			log.Printf("Renaming old file %s -> %s", nthVer, nthPlusOne)
