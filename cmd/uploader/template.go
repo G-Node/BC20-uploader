@@ -63,13 +63,32 @@ const Layout = `
 
 const Form = `
 {{ define "content" }}
+			<div class="body">
+				<div class="ui middle very relaxed page grid">
+					<div class="column">
+
+					</div>
+				</div>
+			</div>
 			<div class="ginform">
 				<div class="ui middle very relaxed page grid">
 					<div class="column">
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
+							<p>Please upload your PDF and video URL until <strong>Sunday, Sep 27, 2020, 8 pm CEST</strong> using the form below.
+							You should have received a password in the instruction email.
+							Before the deadline is reached you will be able to access this form and exchange your PDF and URL.
+							</p>
+							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
+
+							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, rather than an individual solution, we offer the following alternative:
+							<ul>
+								<li>Please upload your video in MP4-format here, until Friday, Sep 25, 1 pm CEST: <a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a></li>
+								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
+							</ul>
+							</p>
 							<h3 class="ui top attached header">
-								BC20 Poster Submission
+								BC20 Poster Submission Form
 							</h3>
 							<div class="ui attached segment">
 								<div class="inline required field">
@@ -90,9 +109,9 @@ const Form = `
 								<span class="help">Link to short poster presentation video</span>
 							</div>
 							<div class="inline required field ">
-								<label for="passcode">Passcode</label>
+								<label for="passcode">Password</label>
 								<input type="password" id="passcode" name="passcode" value="" autofocus required>
-								<span class="help">You should have received a passcode in the instruction email</span>
+								<span class="help">You should have received a password in the instruction email</span>
 							</div>
 							<div class="inline field">
 								<label></label>
@@ -112,12 +131,15 @@ const SuccessTmpl = `
 					<div class="column center">
 						<h1>BC20 poster upload service</h1>
 					</div>
+
 					<div class="ui info message" id="infotable">
 						<div id="infobox">
 							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
 							<p>Please review it carefully and <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> if there are any issues.</p>
 						</div>
 					</div>
+					<div><b>NOTE: Please print this page or save the following for verification. You may be asked to produce the following key to verify your upload.</b></div>
+					<div>Poster upload verification: <code>{{.PosterHash}}</code></div>
 					<hr>
 					{{with .UserData}}
 					<div class="doi title">
@@ -128,14 +150,13 @@ const SuccessTmpl = `
 					<hr>
 
 					<h3>Abstract</h3>
-					<p>NO ABSTRACT YET</p>
+					<p>{{.Abstract}}</p>
 					{{end}}
 
-					<div><a href="">Poster PDF</a></div>
+					<div><a href="{{.PDFPath}}">Poster PDF</a> (click to review)</div>
 					{{if .VideoURL}}
-						<div><a href="{{.VideoURL}}">Poster presentation video</a></div>
+						<div><a href="{{.VideoURL}}">{{.VideoURL}}</a>: Poster presentation video</div>
 					{{end}}
-
 					<hr>
 				</div>
 			</div>

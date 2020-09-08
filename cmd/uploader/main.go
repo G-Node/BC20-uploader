@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -15,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/G-Node/tonic/tonic/web"
-	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -24,83 +25,6 @@ var (
 	commit  string
 	verstr  string
 )
-
-type Config struct {
-	// Port to listen on
-	Port uint16
-	// Directory for saving uploaded files
-	UploadDirectory string
-	// File containing user info with passwords
-	UsersFile string
-	// True if video upload is enabled
-	Videos bool
-	// Number of file versions to keep
-	KeepVersions int
-}
-
-func defaultConfig() *Config {
-	return &Config{
-		Port:            3000,
-		UploadDirectory: "uploads",
-		UsersFile:       "userlist.json",
-		Videos:          false,
-		KeepVersions:    5,
-	}
-}
-
-func readConfig(configFileName string) *Config {
-	configFile, err := os.Open(configFileName)
-	if err != nil {
-		log.Printf("[os.Open] Error reading config file %q: %s", configFileName, err.Error())
-		os.Exit(1)
-	}
-	defer configFile.Close()
-
-	data, err := ioutil.ReadAll(configFile)
-	if err != nil {
-		log.Printf("[ioutil.ReadAll] Error reading config file %q: %s", configFileName, err.Error())
-		os.Exit(1)
-	}
-
-	config := defaultConfig() // set defaults first
-	if err := yaml.Unmarshal(data, config); err != nil {
-		log.Printf("[yaml.Unmarshall] Error reading config file (%q): %s", configFileName, err.Error())
-		os.Exit(1)
-	}
-	// create upload directory (if it doesn't exist)
-	os.MkdirAll(config.UploadDirectory, 0777)
-	return config
-}
-
-// writeConfig writes the default configuration values to the specified file.
-func writeConfig(cfgFileName string) {
-	// using fmt.Print for error messages here since it's run interactively and
-	// the log-style formatting with timestamps makes it noisy.
-	cfgYml, err := yaml.Marshal(defaultConfig())
-	if err != nil {
-		fmt.Printf("Error marshalling default config: %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	cfgFile, err := os.Create(cfgFileName)
-	if err != nil {
-		fmt.Printf("Error creating config file: %s\n", err.Error())
-		os.Exit(1)
-	}
-	defer cfgFile.Close()
-
-	if _, err := cfgFile.Write(cfgYml); err != nil {
-		fmt.Printf("Error writing default config: %s\n", err.Error())
-		os.Exit(1)
-	}
-}
-
-func prompt(msg string) string {
-	var response string
-	fmt.Printf("%s: ", msg)
-	fmt.Scanln(&response)
-	return response
-}
 
 func init() {
 	if build == "" {
@@ -125,6 +49,7 @@ func NewUploader(cfg *Config) *Uploader {
 	srv.Router.HandleFunc("/", uploader.renderForm).Methods("GET")
 	srv.Router.HandleFunc("/submit", uploader.submit).Methods("POST")
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+	srv.Router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(cfg.UploadDirectory))))
 	uploader.Web = srv
 	return uploader
 }
@@ -268,7 +193,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 
 	fileBasename := user.ID
 	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
-	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) {
+	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) string {
 		ext := filepath.Ext(header.Filename)
 		fname := fmt.Sprintf("%s%s", fileBasename, ext)
 		log.Printf("Writing file %q", fname)
@@ -277,8 +202,9 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		if err := saveFile(file, targetPath); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, fmt.Sprintf("File upload (%s) failed", ext))
-			return
+			return ""
 		}
+		return targetPath
 	}
 
 	// Save poster pdf
@@ -288,7 +214,12 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		failure(w, http.StatusInternalServerError, nil, "Poster upload failed")
 		return
 	}
-	saveUploadedFile(posterFile, posterHeader)
+	posterPath := saveUploadedFile(posterFile, posterHeader)
+	posterHash, err := sha1File(posterPath)
+	if err != nil {
+		log.Printf("Failed to hash file upload %q: %s", posterPath, err.Error())
+	}
+	log.Printf("PDF file saved: %s (%s)", posterPath, posterHash)
 
 	if uploader.Config.Videos {
 		// Save video file
@@ -298,7 +229,8 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 			failure(w, http.StatusInternalServerError, nil, "Video upload failed")
 			return
 		}
-		saveUploadedFile(videoFile, videoHeader)
+		videoPath := saveUploadedFile(videoFile, videoHeader)
+		log.Printf("Video file saved: %s", videoPath)
 	}
 
 	videoURL := r.PostForm.Get("video_url")
@@ -313,30 +245,32 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer urlfile.Close()
-		log.Printf("Writing file %q", fname)
 		if _, err := urlfile.WriteString(videoURL); err != nil {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, "Form submission failed")
 			return
 		}
+		log.Printf("URL file saved: %s (%s)", fname, videoURL)
 	}
 
 	submittedData := map[string]interface{}{
-		"UserData": user,
-		"VideoURL": videoURL,
+		"UserData":   user,
+		"PDFPath":    posterPath,
+		"VideoURL":   videoURL,
+		"PosterHash": posterHash,
 	}
 	success(w, submittedData)
 }
 
-func (uploader *Uploader) getUserInfo(passcode string) (*BCUser, error) {
-	users, err := loadUserList(uploader.Config.UsersFile)
+func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
+	users, err := loadUserList(uploader.Config.PostersInfoFile)
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
 		return nil, err
 	}
 
 	for _, user := range users {
-		if user.Passcode == passcode {
+		if user.UploadKey == key {
 			return &user, nil
 		}
 	}
@@ -373,17 +307,37 @@ func saveFile(file multipart.File, target string) error {
 	return nil
 }
 
-type BCUser struct {
+func sha1File(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hasher := sha1.New()
+
+	if _, err := io.Copy(hasher, file); err != nil {
+		return "", err
+	}
+
+	hash := hasher.Sum(nil)
+	encoded := hex.EncodeToString(hash[:])
+	return encoded, nil
+
+}
+
+type BCPoster struct {
 	Session        string
 	AbstractNumber string `json:"abstract_number"`
 	Authors        string
 	Title          string
 	Topic          string
 	ID             string
-	Passcode       string
+	UploadKey      string `json:"upload_key"`
+	Abstract       string
 }
 
-func loadUserList(fname string) ([]BCUser, error) {
+func loadUserList(fname string) ([]BCPoster, error) {
 	file, err := os.Open(fname)
 	if err != nil {
 		return nil, err
@@ -395,7 +349,7 @@ func loadUserList(fname string) ([]BCUser, error) {
 		return nil, err
 	}
 
-	users := make([]BCUser, 0, 100)
+	users := make([]BCPoster, 0, 100)
 	if err := json.Unmarshal(fileData, &users); err != nil {
 		return nil, err
 	}
