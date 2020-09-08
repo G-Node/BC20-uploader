@@ -75,15 +75,15 @@ const Form = `
 					<div class="column">
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
-							<p>Please upload your PDF and video URL until <strong>Sunday, Sep 27, 2020, 8 pm CEST</strong> using the form below.
-							You should have received a password in the instruction email.
-							Before the deadline is reached you will be able to access this form and exchange your PDF and URL.
+							<p>Please upload your PDF and video URL by <strong>Sunday, Sep 27, 2020, 8 pm CEST</strong> using the form below.
+							You have received a password in the instruction email.
+							You can access the form and re-upload your poster and URL until the deadline.
 							</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
 
 							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, rather than an individual solution, we offer the following alternative:
 							<ul>
-								<li>Please upload your video in MP4-format here, until Friday, Sep 25, 1 pm CEST: <a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a></li>
+								<li>Please upload your video in MP4-format here, by Friday, Sep 25, 1 pm CEST: <a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a></li>
 								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
 							</ul>
 							</p>
@@ -106,12 +106,12 @@ const Form = `
 							<div class="inline field">
 								<label for="video_url">Video URL</label>
 								<input type="url" id="video_url" name="video_url">
-								<span class="help">Link to short poster presentation video</span>
+								<span class="help">Link to short self-hosted presentation</span>
 							</div>
 							<div class="inline required field ">
 								<label for="passcode">Password</label>
 								<input type="password" id="passcode" name="passcode" value="" autofocus required>
-								<span class="help">You should have received a password in the instruction email</span>
+								<span class="help">You have received a password in the instruction email</span>
 							</div>
 							<div class="inline field">
 								<label></label>
