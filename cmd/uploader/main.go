@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/G-Node/tonic/tonic/web"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,8 +16,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
-
-	"github.com/G-Node/tonic/tonic/web"
+	"time"
 )
 
 var (
@@ -51,6 +51,11 @@ func NewUploader(cfg *Config) *Uploader {
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	srv.Router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(cfg.UploadDirectory))))
 	uploader.Web = srv
+
+	// Increase timeouts
+	srv.Server.WriteTimeout = time.Minute * 10
+	srv.Server.ReadTimeout = time.Minute
+	srv.Server.IdleTimeout = time.Minute * 2
 	return uploader
 }
 
