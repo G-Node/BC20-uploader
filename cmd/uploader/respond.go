@@ -38,6 +38,24 @@ func failure(w http.ResponseWriter, status int, data map[string]interface{}, mes
 
 }
 
+func emailfailure(w http.ResponseWriter, status int, data map[string]interface{}, message string) {
+	tmpl, err := PrepareTemplate(EmailFailTmpl)
+	if err != nil {
+		w.Write([]byte(message))
+		return
+	}
+
+	errData := map[string]interface{}{
+		"Message": message,
+	}
+
+	w.WriteHeader(status)
+	if err := tmpl.Execute(w, &errData); err != nil {
+		log.Printf("Error rendering email fail page: %v", err)
+		return
+	}
+}
+
 func PrepareTemplate(contentTemplate string) (*template.Template, error) {
 	tmpl := template.New("layout")
 	tmpl, err := tmpl.Parse(Layout)
