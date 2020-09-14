@@ -417,10 +417,10 @@ textarea#description {
   margin: auto;
   width: 800px!important;
 }
-.ginform form .ui.message,
+.ginform form .ui.message {
   text-align: center;
 }
-.ginform form .header, {
+.ginform form .header {
   padding-left: 280px !important;
 }
 .ginform form .inline.field > label {
