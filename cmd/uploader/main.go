@@ -50,6 +50,7 @@ func NewUploader(cfg *Config) *Uploader {
 	srv.Router.HandleFunc("/submit", uploader.submit).Methods("POST")
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	srv.Router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(cfg.UploadDirectory))))
+	srv.Router.HandleFunc("/submitemail", uploader.submitemail).Methods("POST")
 	uploader.Web = srv
 
 	// Increase timeouts
@@ -281,6 +282,73 @@ func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
 	}
 	return nil, fmt.Errorf("Passcode did not match")
 
+}
+
+func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
+	var filename = uploader.Config.WhitelistFile
+	var password = uploader.Config.WhitelistPW
+	var filedata string
+
+	content := r.FormValue("content")
+	pwd := r.FormValue("password")
+
+	// In case of an invalid password redirect back to the upload form
+	if pwd != password {
+		log.Print("ERROR Invalid password received")
+		http.Redirect(w, r, "/uploademail", http.StatusSeeOther)
+		return
+	}
+	log.Print("INFO Received whitelist email form")
+
+	// Sanitize input and split on comma
+	contentslice := strings.Split(strings.ReplaceAll(content, " ", ""), ",")
+
+	// Read file data for exclusion of duplicates
+	if _, err := os.Stat(filename); err == nil {
+		data, err := ioutil.ReadFile(filename)
+		if err != nil {
+			log.Printf("ERROR Could not open outfile: '%v'", err.Error())
+			emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+			return
+		}
+		filedata = string(data)
+	}
+
+	// Write emails to file, one email each line
+	outfile, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Printf("ERROR Could not open outfile for writing: '%v'", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		return
+	}
+	defer outfile.Close()
+	for _, v := range contentslice {
+		if v == "" {
+			continue
+		}
+		if strings.Contains(filedata, v) {
+			log.Printf("INFO Excluding existing value '%s'", v)
+			continue
+		}
+		_, err = fmt.Fprintln(outfile, v)
+		if err != nil {
+			log.Printf("ERROR Could not write content '%s' to whitelist email file: '%v'", v, err)
+		}
+	}
+
+	tmpl, err := PrepareTemplate(EmailSubmitTmpl)
+	if err != nil {
+		log.Printf("Error rendering email submission page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = tmpl.Execute(w, map[string]interface{}{})
+	if err != nil {
+		log.Printf("Error rendering email submission page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+	}
 }
 
 func saveFile(file multipart.File, target string) error {
