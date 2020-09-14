@@ -235,4 +235,27 @@ const EmailSubmitTmpl = `
 {{ end }}
 `
 
+const EmailFailTmpl = `
+{{ define "content" }}
+<div class="home middle very relaxed page grid" id="main">
+	<div class="ui container wide centered column doi">
+		<div class="column center">
+			<h1>BC20 whitelist email upload</h1>
+		</div>
+		<div class="ui error message" id="infotable">
+			<div id="infobox">
+				<p>The upload has failed.<p>
+
+				<p>{{.Message}}</p>
+
+				<p><a href="/uploademail">Click here</a> to return to the upload form and try again.</p>
+			</div>
+		</div>
+		<hr>
+	</div>
+	</div>
+</div>
+{{ end }}
+`
+
 // vim: ft=gohtmltmpl
