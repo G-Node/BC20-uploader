@@ -50,6 +50,7 @@ func NewUploader(cfg *Config) *Uploader {
 	srv.Router.HandleFunc("/submit", uploader.submit).Methods("POST")
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	srv.Router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(cfg.UploadDirectory))))
+	srv.Router.HandleFunc("/uploademail", uploader.uploademail).Methods("GET")
 	srv.Router.HandleFunc("/submitemail", uploader.submitemail).Methods("POST")
 	uploader.Web = srv
 
@@ -282,6 +283,22 @@ func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
 	}
 	return nil, fmt.Errorf("Passcode did not match")
 
+}
+
+func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := PrepareTemplate(EmailFormTmpl)
+	if err != nil {
+		log.Printf("Error rendering email form page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = tmpl.Execute(w, map[string]interface{}{})
+	if err != nil {
+		log.Printf("Error rendering email form page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
+	}
 }
 
 func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
