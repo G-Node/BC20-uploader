@@ -187,4 +187,52 @@ const FailureTmpl = `
 {{end}}
 `
 
+const EmailFormTmpl = `
+{{ define "content" }}
+<div class="body">
+	<div class="ui middle very relaxed page grid">
+		<div class="column"></div>
+	</div>
+</div>
+<div class="ginform">
+	<div class="ui middle very relaxed page grid">
+		<div class="column">
+			<form class="ui form" method='post' action='/submitemail'>
+				<h3 class="ui top attached header">
+					BC20 whitelist email address upload form
+				</h3>
+				<div class="ui attached segment">
+					<div class="inline required field">
+						<label for='content'>Email addresses</label>
+						<input required type='email' multiple name='content' id='content' size='50'>
+						<span class="help">Comma separated list of email addresses.</span>
+					</div>
+					<div class="inline required field">
+						<label for='password'>Password</label>
+						<input required type='password' name='password' id='password' size='50'>
+					</div>
+					<div class="inline field">
+						<label></label>
+						<button class="ui green button">Submit</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{{ end }}
+`
+
+const EmailSubmitTmpl = `
+{{ define "content" }}
+<div class="ui container">
+	<p></p>
+	<h1>Upload received</h1>
+	<div class="ui dividing header"></div>
+	<p>Whitelist email addresses have been uploaded.</p>
+	<p><a href='/uploademail'>Back to the email upload form</a></p>
+</div>
+{{ end }}
+`
+
 // vim: ft=gohtmltmpl
