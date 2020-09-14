@@ -413,6 +413,9 @@ textarea#description {
   font-size: 1rem;
   vertical-align: middle;
 }
+.ginform {
+  padding-bottom: 150px;
+}
 .ginform form {
   margin: auto;
   width: 800px!important;
