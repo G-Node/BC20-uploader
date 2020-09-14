@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -20,6 +21,10 @@ type Config struct {
 	Videos bool
 	// Number of file versions to keep
 	KeepVersions int
+	// File whitelisted email addresses can be uploaded to
+	WhitelistFile string
+	// Password for whitelist email address upload
+	WhitelistPW string
 }
 
 func defaultConfig() *Config {
@@ -29,6 +34,8 @@ func defaultConfig() *Config {
 		PostersInfoFile:       "posters.json",
 		Videos:          false,
 		KeepVersions:    5,
+		WhitelistFile:   "whitelist.txt",
+		WhitelistPW:     fmt.Sprint(time.Now().UnixNano()),
 	}
 }
 
