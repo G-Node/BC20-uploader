@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -317,8 +318,10 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("INFO Received whitelist email form")
 
-	// Sanitize input and split on comma
-	contentslice := strings.Split(strings.ReplaceAll(content, " ", ""), ",")
+	// Sanitize input and split on whitespaces, comma and semicolon
+	rstring := regexp.MustCompile(`[\s,;]+`)
+	sanstring := rstring.ReplaceAllString(content, " ")
+	contentslice := strings.Split(sanstring, " ")
 
 	// Read file data for exclusion of duplicates
 	if _, err := os.Stat(filename); err == nil {
