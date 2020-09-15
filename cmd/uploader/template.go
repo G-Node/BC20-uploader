@@ -204,12 +204,12 @@ const EmailFormTmpl = `
 				<div class="ui attached segment">
 					<div class="inline required field">
 						<label for='content'>Email addresses</label>
-						<input required type='email' multiple name='content' id='content' size='50'>
-						<span class="help">Comma separated list of email addresses.</span>
+						<textarea required name='content' id='content'></textarea>
+						<span class="help">Email addresses can be separated by comma, semicolon, space, tab or newline.</span>
 					</div>
 					<div class="inline required field">
 						<label for='password'>Password</label>
-						<input required type='password' name='password' id='password' size='50'>
+						<input required type='password' name='password' id='password'>
 					</div>
 					<div class="inline field">
 						<label></label>
