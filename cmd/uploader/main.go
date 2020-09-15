@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -305,7 +306,6 @@ func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
 func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	var filename = uploader.Config.WhitelistFile
 	var password = uploader.Config.WhitelistPW
-	var filedata string
 
 	content := r.FormValue("content")
 	pwd := r.FormValue("password")
@@ -323,36 +323,48 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	sanstring := rstring.ReplaceAllString(content, " ")
 	contentslice := strings.Split(sanstring, " ")
 
-	// Read file data for exclusion of duplicates
+	mailmap := make(map[string]interface{})
+	// The file is created below if it does not exist yet
 	if _, err := os.Stat(filename); err == nil {
-		data, err := ioutil.ReadFile(filename)
+		// Read file lines to map for duplicate entry exclusion
+		datafile, err := os.Open(filename)
 		if err != nil {
-			log.Printf("ERROR Could not open outfile: '%v'", err.Error())
+			log.Printf("ERROR Could not open whitelist email file: '%v'", err.Error())
 			emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
 			return
 		}
-		filedata = string(data)
+		fileScanner := bufio.NewScanner(datafile)
+
+		// Populate data map
+		for fileScanner.Scan() {
+			mailmap[fileScanner.Text()] = nil
+		}
+
+		// No defer close since the same file is opened again and truncated below
+		datafile.Close()
 	}
 
-	// Write emails to file, one email each line
-	outfile, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// Reconcile stored and new data
+	for _, v := range contentslice {
+		mailmap[sha1String(v)] = nil
+	}
+
+	// Truncate output file and write all data to it
+	outfile, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("ERROR Could not open outfile for writing: '%v'", err)
 		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
 		return
 	}
 	defer outfile.Close()
-	for _, v := range contentslice {
-		if v == "" {
+
+	for k := range mailmap {
+		if k == "" {
 			continue
 		}
-		if strings.Contains(filedata, v) {
-			log.Printf("INFO Excluding existing value '%s'", v)
-			continue
-		}
-		_, err = fmt.Fprintln(outfile, v)
+		_, err = fmt.Fprintln(outfile, k)
 		if err != nil {
-			log.Printf("ERROR Could not write content '%s' to whitelist email file: '%v'", v, err)
+			log.Printf("ERROR Could not write content '%s' to whitelist email file: '%v'", k, err)
 		}
 	}
 

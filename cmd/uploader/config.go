@@ -31,7 +31,7 @@ func defaultConfig() *Config {
 	return &Config{
 		Port:            3000,
 		UploadDirectory: "uploads",
-		PostersInfoFile:       "posters.json",
+		PostersInfoFile: "posters.json",
 		Videos:          false,
 		KeepVersions:    5,
 		WhitelistFile:   "whitelist.txt",
