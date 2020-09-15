@@ -397,6 +397,15 @@ func saveFile(file multipart.File, target string) error {
 	return nil
 }
 
+func sha1String(content string) string {
+	hasher := sha1.New()
+	io.WriteString(hasher, content)
+	hash := hasher.Sum(nil)
+	encoded := hex.EncodeToString(hash[:])
+
+	return encoded
+}
+
 func sha1File(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
