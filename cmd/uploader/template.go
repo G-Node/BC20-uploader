@@ -187,4 +187,75 @@ const FailureTmpl = `
 {{end}}
 `
 
+const EmailFormTmpl = `
+{{ define "content" }}
+<div class="body">
+	<div class="ui middle very relaxed page grid">
+		<div class="column"></div>
+	</div>
+</div>
+<div class="ginform">
+	<div class="ui middle very relaxed page grid">
+		<div class="column">
+			<form class="ui form" method='post' action='/submitemail'>
+				<h3 class="ui top attached header">
+					BC20 whitelist email address upload form
+				</h3>
+				<div class="ui attached segment">
+					<div class="inline required field">
+						<label for='content'>Email addresses</label>
+						<textarea required name='content' id='content'></textarea>
+						<span class="help">Email addresses can be separated by comma, semicolon, space, tab or newline.</span>
+					</div>
+					<div class="inline required field">
+						<label for='password'>Password</label>
+						<input required type='password' name='password' id='password'>
+					</div>
+					<div class="inline field">
+						<label></label>
+						<button class="ui green button">Submit</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{{ end }}
+`
+
+const EmailSubmitTmpl = `
+{{ define "content" }}
+<div class="ui container">
+	<p></p>
+	<h1>Upload received</h1>
+	<div class="ui dividing header"></div>
+	<p>Whitelist email addresses have been uploaded.</p>
+	<p><a href='/uploademail'>Back to the email upload form</a></p>
+</div>
+{{ end }}
+`
+
+const EmailFailTmpl = `
+{{ define "content" }}
+<div class="home middle very relaxed page grid" id="main">
+	<div class="ui container wide centered column doi">
+		<div class="column center">
+			<h1>BC20 whitelist email upload</h1>
+		</div>
+		<div class="ui error message" id="infotable">
+			<div id="infobox">
+				<p>The upload has failed.<p>
+
+				<p>{{.Message}}</p>
+
+				<p><a href="/uploademail">Click here</a> to return to the upload form and try again.</p>
+			</div>
+		</div>
+		<hr>
+	</div>
+	</div>
+</div>
+{{ end }}
+`
+
 // vim: ft=gohtmltmpl

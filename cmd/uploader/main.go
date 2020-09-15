@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -50,6 +52,8 @@ func NewUploader(cfg *Config) *Uploader {
 	srv.Router.HandleFunc("/submit", uploader.submit).Methods("POST")
 	srv.Router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	srv.Router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(cfg.UploadDirectory))))
+	srv.Router.HandleFunc("/uploademail", uploader.uploademail).Methods("GET")
+	srv.Router.HandleFunc("/submitemail", uploader.submitemail).Methods("POST")
 	uploader.Web = srv
 
 	// Increase timeouts
@@ -283,6 +287,102 @@ func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
 
 }
 
+func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := PrepareTemplate(EmailFormTmpl)
+	if err != nil {
+		log.Printf("Error rendering email form page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = tmpl.Execute(w, map[string]interface{}{})
+	if err != nil {
+		log.Printf("Error rendering email form page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
+	}
+}
+
+func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
+	var filename = uploader.Config.WhitelistFile
+	var password = uploader.Config.WhitelistPW
+
+	content := r.FormValue("content")
+	pwd := r.FormValue("password")
+
+	// In case of an invalid password redirect back to the upload form
+	if pwd != password {
+		log.Print("ERROR Invalid password received")
+		http.Redirect(w, r, "/uploademail", http.StatusSeeOther)
+		return
+	}
+	log.Print("INFO Received whitelist email form")
+
+	// Sanitize input and split on whitespaces, comma and semicolon
+	rstring := regexp.MustCompile(`[\s,;]+`)
+	sanstring := rstring.ReplaceAllString(content, " ")
+	contentslice := strings.Split(sanstring, " ")
+
+	mailmap := make(map[string]interface{})
+	// The file is created below if it does not exist yet
+	if _, err := os.Stat(filename); err == nil {
+		// Read file lines to map for duplicate entry exclusion
+		datafile, err := os.Open(filename)
+		if err != nil {
+			log.Printf("ERROR Could not open whitelist email file: '%v'", err.Error())
+			emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+			return
+		}
+		fileScanner := bufio.NewScanner(datafile)
+
+		// Populate data map
+		for fileScanner.Scan() {
+			mailmap[fileScanner.Text()] = nil
+		}
+
+		// No defer close since the same file is opened again and truncated below
+		datafile.Close()
+	}
+
+	// Reconcile stored and new data
+	for _, v := range contentslice {
+		mailmap[sha1String(v)] = nil
+	}
+
+	// Truncate output file and write all data to it
+	outfile, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Printf("ERROR Could not open outfile for writing: '%v'", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		return
+	}
+	defer outfile.Close()
+
+	for k := range mailmap {
+		if k == "" {
+			continue
+		}
+		_, err = fmt.Fprintln(outfile, k)
+		if err != nil {
+			log.Printf("ERROR Could not write content '%s' to whitelist email file: '%v'", k, err)
+		}
+	}
+
+	tmpl, err := PrepareTemplate(EmailSubmitTmpl)
+	if err != nil {
+		log.Printf("Error rendering email submission page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = tmpl.Execute(w, map[string]interface{}{})
+	if err != nil {
+		log.Printf("Error rendering email submission page: %v", err)
+		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+	}
+}
+
 func saveFile(file multipart.File, target string) error {
 	buf := make([]byte, 1024)
 	outfile, err := os.Create(target)
@@ -310,6 +410,15 @@ func saveFile(file multipart.File, target string) error {
 		}
 	}
 	return nil
+}
+
+func sha1String(content string) string {
+	hasher := sha1.New()
+	io.WriteString(hasher, content)
+	hash := hasher.Sum(nil)
+	encoded := hex.EncodeToString(hash[:])
+
+	return encoded
 }
 
 func sha1File(path string) (string, error) {
