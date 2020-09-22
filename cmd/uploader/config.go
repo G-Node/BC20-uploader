@@ -21,6 +21,8 @@ type Config struct {
 	Videos bool
 	// Number of file versions to keep
 	KeepVersions int
+	// Date as YYYY-MM-DD string when the poster submission is closed
+	SubmissionClosedDate string
 	// File whitelisted email addresses can be uploaded to
 	WhitelistFile string
 	// Password for whitelist email address upload
@@ -29,13 +31,14 @@ type Config struct {
 
 func defaultConfig() *Config {
 	return &Config{
-		Port:            3000,
-		UploadDirectory: "uploads",
-		PostersInfoFile: "posters.json",
-		Videos:          false,
-		KeepVersions:    5,
-		WhitelistFile:   "whitelist.txt",
-		WhitelistPW:     fmt.Sprint(time.Now().UnixNano()),
+		Port:                 3000,
+		UploadDirectory:      "uploads",
+		PostersInfoFile:      "posters.json",
+		Videos:               false,
+		KeepVersions:         5,
+		SubmissionClosedDate: "2100-12-31",
+		WhitelistFile:        "whitelist.txt",
+		WhitelistPW:          fmt.Sprint(time.Now().UnixNano()),
 	}
 }
 

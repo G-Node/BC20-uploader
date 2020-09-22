@@ -41,11 +41,11 @@ const Layout = `
 			<div class="ui container">
 				<div class="ui center links item brand footertext">
 					<a href="http://www.g-node.org"><img class="ui mini footericon" src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>© G-Node, 2016-2020</a>
-					<a href="https://gin.g-node.org/G-Node/Info/wiki/about">About</a>
-					<a href="https://gin.g-node.org/G-Node/Info/wiki/imprint">Imprint</a>
-					<a href="https://gin.g-node.org/G-Node/Info/wiki/contact">Contact</a>
-					<a href="https://gin.g-node.org/G-Node/Info/wiki/Terms+of+Use">Terms of Use</a>
-					<a href="https://gin.g-node.org/G-Node/Info/wiki/Datenschutz">Datenschutz</a>
+					<a href="https://bc20.g-node.org/G-Node/Info/wiki/about">About</a>
+					<a href="https://bc20.g-node.org/G-Node/Info/wiki/imprint">Imprint</a>
+					<a href="https://bc20.g-node.org/G-Node/Info/wiki/contact">Contact</a>
+					<a href="https://bc20.g-node.org/G-Node/Info/wiki/Terms+of+Use">Terms of Use</a>
+					<a href="https://bc20.g-node.org/G-Node/Info/wiki/Datenschutz">Datenschutz</a>
 				</div>
 				<div class="ui center links item brand footertext">
 					<span>Powered by:      <a href="https://github.com/gogits/gogs"><img class="ui mini footericon" src="https://gin.g-node.org/img/gogs.svg"/></a>         </span>
@@ -63,6 +63,8 @@ const Layout = `
 
 const Form = `
 {{ define "content" }}
+	{{ if .submission }}
+			<!-- Poster and video link submission form -->
 			<div class="body">
 				<div class="ui middle very relaxed page grid">
 					<div class="column">
@@ -122,6 +124,33 @@ const Form = `
 					</div>
 				</div>
 			</div>
+	{{ else }}
+			<!-- Closed poster and video link submission-->
+			<div class="ui container">
+				<div class="jumbotron">
+					<div class="page-header">
+						<h1>Bernstein Conference 2020</h1>
+					</div>
+
+					<a href="http://www.bernstein-conference.de">
+						<img class="conference-banner img-responsive img-rounded" src="/assets/BC20online_header.jpg" alt="Conference Logo">
+					</a>
+
+					<br>
+					<div class="jumbo-small center">
+						<p>Poster and video submission is <b class="red">closed</b>.<br></p>
+					</div>
+					<br>
+
+					<div class="jumbo-small">
+						<p>Each year the Bernstein Network invites the international computational neuroscience community to the annual Bernstein Conference for intensive scientific exchange. It has established itself as one of the most renown conferences worldwide in this field, attracting students, postdocs and PIs from around the world to meet and discuss new scientific discoveries.<br></p>
+						<p>In 2020, the conference will be held entirely online for the first time.<br></p>
+					</div>
+
+					<p><b>September, 29 - October, 1, 2020</b></p>
+				</div>
+			</div>
+	{{ end }}
 {{ end }}
 `
 const SuccessTmpl = `
