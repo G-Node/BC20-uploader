@@ -126,9 +126,7 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	if closedate, err := time.Parse("2006-01-02", uploader.Config.SubmissionClosedDate); err != nil {
 		log.Println("Could not parse submission closing date; submission is open")
 	} else {
-		fmt.Printf("Current date: %v, config: %v", time.Now(), closedate)
 		submission = time.Now().Before(closedate)
-		log.Printf("Poster submission open: %v\n", submission)
 	}
 
 	formOpts := map[string]interface{}{
