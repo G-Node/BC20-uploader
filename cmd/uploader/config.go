@@ -21,6 +21,8 @@ type Config struct {
 	Videos bool
 	// Number of file versions to keep
 	KeepVersions int
+	// True if poster submission is open, false if submission is closed
+	Submission bool
 	// File whitelisted email addresses can be uploaded to
 	WhitelistFile string
 	// Password for whitelist email address upload
@@ -34,6 +36,7 @@ func defaultConfig() *Config {
 		PostersInfoFile: "posters.json",
 		Videos:          false,
 		KeepVersions:    5,
+		Submission:      false,
 		WhitelistFile:   "whitelist.txt",
 		WhitelistPW:     fmt.Sprint(time.Now().UnixNano()),
 	}
