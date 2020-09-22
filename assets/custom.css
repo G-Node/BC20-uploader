@@ -450,3 +450,36 @@ textarea#description {
 .ginform .ui.form #auto-init {
   margin-left: 265px !important;
 }
+.jumbotron {
+  padding: 30px;
+  padding-top: 10px;
+  margin: 30px;
+  background-color: #F5F7FA;
+  border-radius: 10px;
+}
+.jumbotron .page-header {
+  margin-top: 20px;
+  margin-bottom: 40px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #eeeeee;
+}
+.jumbotron h1 {
+  font-size: 29px;
+}
+.jumbotron p {
+  font-size: 18px;
+}
+.red {
+  color: #cd2939;
+}
+.conference-banner {
+  max-height: 128px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.jumbo-small {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  font-size: 1.1em;
+}
