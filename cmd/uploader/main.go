@@ -123,6 +123,7 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formOpts := map[string]interface{}{
+		"submission": uploader.Config.Submission,
 		"videos": uploader.Config.Videos,
 	}
 

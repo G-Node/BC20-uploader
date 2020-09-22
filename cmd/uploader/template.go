@@ -63,6 +63,8 @@ const Layout = `
 
 const Form = `
 {{ define "content" }}
+	{{ if .submission }}
+			<!-- Poster and video link submission form -->
 			<div class="body">
 				<div class="ui middle very relaxed page grid">
 					<div class="column">
@@ -122,6 +124,33 @@ const Form = `
 					</div>
 				</div>
 			</div>
+	{{ else }}
+			<!-- Closed poster and video link submission-->
+			<div class="ui container">
+				<div class="jumbotron">
+					<div class="page-header">
+						<h1>Bernstein Conference 2020</h1>
+					</div>
+
+					<a href="http://www.bernstein-conference.de">
+						<img class="conference-banner img-responsive img-rounded" src="/assets/BC20online_header.jpg" alt="Conference Logo">
+					</a>
+
+					<br>
+					<div class="jumbo-small center">
+						<p>Poster and video submission is <b class="red">closed</b>.<br></p>
+					</div>
+					<br>
+
+					<div class="jumbo-small">
+						<p>Each year the Bernstein Network invites the international computational neuroscience community to the annual Bernstein Conference for intensive scientific exchange. It has established itself as one of the most renown conferences worldwide in this field, attracting students, postdocs and PIs from around the world to meet and discuss new scientific discoveries.<br></p>
+						<p>In 2020, the conference will be held entirely online for the first time.<br></p>
+					</div>
+
+					<p><b>September, 29 - October, 1, 2020</b></p>
+				</div>
+			</div>
+	{{ end }}
 {{ end }}
 `
 const SuccessTmpl = `
