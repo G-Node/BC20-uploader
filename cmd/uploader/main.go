@@ -321,7 +321,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	// In case of an invalid password redirect back to the upload form
 	if pwd != password {
 		log.Print("ERROR Invalid password received")
-		http.Redirect(w, r, "/uploademail", http.StatusSeeOther)
+		failure(w, http.StatusUnauthorized, nil, "Unauthorised: Incorrect password")
 		return
 	}
 	log.Print("INFO Received whitelist email form")
@@ -352,10 +352,14 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 		datafile.Close()
 	}
 
+	log.Printf("Loaded %d entries from existing file", len(mailmap))
+
 	// Reconcile stored and new data
 	for _, v := range contentslice {
 		mailmap[sha1String(v)] = nil
 	}
+
+	log.Printf("New entries added. Total entries: %d", len(mailmap))
 
 	// Truncate output file and write all data to it
 	outfile, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
@@ -389,6 +393,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error rendering email submission page: %v", err)
 		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
 	}
+	log.Printf("Saved email hashes to %q", filename)
 }
 
 func saveFile(file multipart.File, target string) error {

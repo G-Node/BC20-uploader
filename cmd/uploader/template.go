@@ -202,7 +202,7 @@ const FailureTmpl = `
 					</div>
 					<div class="ui error message" id="infotable">
 						<div id="infobox">
-							<p>The poster submission failed.<p>
+							<p>The submission failed.<p>
 
 							<p>{{.Message}}</p>
 
