@@ -354,9 +354,9 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Loaded %d entries from existing file", len(mailmap))
 
-	// Reconcile stored and new data
+	// Reconcile stored and new data; make sure new content is lower case before it is hashed
 	for _, v := range contentslice {
-		mailmap[sha1String(v)] = nil
+		mailmap[sha1String(strings.ToLower(v))] = nil
 	}
 
 	log.Printf("New entries added. Total entries: %d", len(mailmap))
