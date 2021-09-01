@@ -145,10 +145,7 @@ const Form = `
 							Bernstein Conference for intensive scientific exchange. It has established itself as one of the most renown 
 							conferences worldwide in this field, attracting students, postdocs and PIs from around the world to meet and 
 							discuss new scientific discoveries.<br></p>
-						<p>Due to the ongoing pandemic the Bernstein Conference will be held online for the second time.<br></p>
 					</div>
-
-					<p><b>September, 21-23, 2021</b></p>
 				</div>
 			</div>
 	{{ end }}
@@ -159,11 +156,12 @@ const SuccessTmpl = `
 			<div class="home middle very relaxed page grid" id="main">
 				<div class="ui container wide centered column doi">
 					<div class="column center">
-						<h1>Bernstein Conference Poster Submission</h1>
+						<h1>Bernstein Conference Poster Submission Success</h1>
 					</div>
 
 					<div class="ui info message" id="infotable">
 						<div id="infobox">
+							<p>Your upload was <p>succesful!</p></p>
 							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
 							<p>Please review it carefully and <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> 
 								if there are any issues.</p>
@@ -238,7 +236,8 @@ const EmailFormTmpl = `
 					<div class="inline required field">
 						<label for='content'>Email addresses</label>
 						<textarea required name='content' id='content'></textarea>
-						<span class="help">Email addresses can be separated by comma, semicolon, space, tab or newline.</span>
+						<span class="help">Email addresses can be separated by comma, semicolon, space, tab or newline.
+						You can always upload a full list, only new addresses are added.</span>
 					</div>
 					<div class="inline required field">
 						<label for='password'>Password</label>
