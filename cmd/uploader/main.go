@@ -130,8 +130,12 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formOpts := map[string]interface{}{
-		"submission": submission,
-		"videos":     uploader.Config.Videos,
+		"submission":    submission,
+		"videos":        uploader.Config.Videos,
+		"viduploadurl":  uploader.Config.VideoUploadURL,
+		"supportemail":  uploader.Config.SupportEmail,
+		"closedtext":    uploader.Config.SubmissionClosedText,
+		"closedtextvid": uploader.Config.SubmissionClosedVideoText,
 	}
 
 	if err := tmpl.Execute(w, formOpts); err != nil {
@@ -271,10 +275,11 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	submittedData := map[string]interface{}{
-		"UserData":   user,
-		"PDFPath":    posterPath,
-		"VideoURL":   videoURL,
-		"PosterHash": posterHash,
+		"UserData":     user,
+		"PDFPath":      posterPath,
+		"VideoURL":     videoURL,
+		"PosterHash":   posterHash,
+		"supportemail": uploader.Config.SupportEmail,
 	}
 	success(w, submittedData)
 }
@@ -291,8 +296,7 @@ func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
 			return &user, nil
 		}
 	}
-	return nil, fmt.Errorf("Passcode did not match")
-
+	return nil, fmt.Errorf("passcode did not match")
 }
 
 func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
