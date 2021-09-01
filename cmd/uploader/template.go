@@ -28,7 +28,7 @@ const Layout = `
 								<a class="item brand" href="https://posters.bc.g-node.org">
 									<img class="ui mini image" src="/assets/favicon.png">
 									<a class="item" href="http://www.bernstein-conference.de/">Conference Website</a>
-									<a class="item" href="mailto:bernstein.conference@fz-juelich.de">Contact</a>
+									<a class="item" href="mailto:{{ .supportemail }}">Contact</a>
 								</a>
 							</div>
 						</div>
@@ -41,7 +41,8 @@ const Layout = `
 			<div class="ui container">
 				<div class="ui center links item brand footertext">
 					<a href="http://www.g-node.org">
-						<img class="ui mini footericon" src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>
+						<img class="ui mini footericon" 
+							 src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>
 						© G-Node, 2016-2021
 					</a>
 					<a href="https://bc.g-node.org/G-Node/Info/wiki/about">About</a>
@@ -73,7 +74,7 @@ const Form = `
 					<div class="column">
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
-							<p>Please upload your PDF and video URL by <strong>Sunday, Sep 19, 2021, 8 pm CEST</strong> using the form below.
+							<p>Please upload your PDF and video URL by <strong>{{ .closedtext }}</strong> using the form below.
 							You have received a password in the instruction email.
 							You can access the form and re-upload your poster and URL until the deadline.
 							</p>
@@ -82,8 +83,8 @@ const Form = `
 							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, 
 								rather than an individual solution, we offer the following alternative:
 							<ul>
-								<li>Please upload your video in MP4-format here, by Friday, Sep 17, 1 pm CEST: 
-								<a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a></li>
+								<li>Please upload your video in MP4-format here, by {{ .closedtextvid }}: 
+								<a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a></li>
 								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
 							</ul>
 							</p>
@@ -161,9 +162,9 @@ const SuccessTmpl = `
 
 					<div class="ui info message" id="infotable">
 						<div id="infobox">
-							<p>Your upload was <p>succesful!</p></p>
+							<p>Your upload was <strong>successful!</strong></p>
 							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
-							<p>Please review it carefully and <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> 
+							<p>Please review it carefully and <strong><a href="mailto:{{.supportemail}}">contact us</a></strong> 
 								if there are any issues.</p>
 						</div>
 					</div>
