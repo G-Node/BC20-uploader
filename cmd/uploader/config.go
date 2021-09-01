@@ -19,10 +19,18 @@ type Config struct {
 	PostersInfoFile string
 	// True if video upload is enabled
 	Videos bool
+	// Alternative video upload url
+	VideoUploadURL string
+	// Support email address displayed on the page
+	SupportEmail string
 	// Number of file versions to keep
 	KeepVersions int
 	// Date as YYYY-MM-DD string when the poster submission is closed
 	SubmissionClosedDate string
+	// Text when the poster submission is closed
+	SubmissionClosedText string
+	// Text when the video upload is closed
+	SubmissionClosedVideoText string
 	// File whitelisted email addresses can be uploaded to
 	WhitelistFile string
 	// Password for whitelist email address upload
@@ -31,14 +39,18 @@ type Config struct {
 
 func defaultConfig() *Config {
 	return &Config{
-		Port:                 3000,
-		UploadDirectory:      "uploads",
-		PostersInfoFile:      "posters.json",
-		Videos:               false,
-		KeepVersions:         5,
-		SubmissionClosedDate: "2100-12-31",
-		WhitelistFile:        "whitelist.txt",
-		WhitelistPW:          fmt.Sprint(time.Now().UnixNano()),
+		Port:                      3000,
+		UploadDirectory:           "uploads",
+		PostersInfoFile:           "posters.json",
+		Videos:                    false,
+		VideoUploadURL:            "",
+		SupportEmail:              "bernstein.conference@fz-juelich.de",
+		KeepVersions:              5,
+		SubmissionClosedDate:      "2100-12-31",
+		SubmissionClosedText:      "Sunday, Sep 19, 2021, 8 pm CEST",
+		SubmissionClosedVideoText: "Friday, Sep 17, 1 pm CEST",
+		WhitelistFile:             "whitelist.txt",
+		WhitelistPW:               fmt.Sprint(time.Now().UnixNano()),
 	}
 }
 
