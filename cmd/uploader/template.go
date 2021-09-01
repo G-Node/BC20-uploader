@@ -131,7 +131,7 @@ const Form = `
 					</div>
 
 					<a href="http://www.bernstein-conference.de">
-						<img class="conference-banner img-responsive img-rounded" src="/assets/BC_online_header.jpg" alt="Conference Logo">
+						<img class="conference-banner img-responsive img-rounded" src="/assets/BC_online_header.jpeg" alt="Conference Logo">
 					</a>
 
 					<br>
