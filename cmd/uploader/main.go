@@ -244,14 +244,19 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 
 	if uploader.Config.Videos {
 		// Save video file
+		// account for the case that file upload is not required and the formfile can be empty.
+		// simply continue in this case.
 		videoFile, videoHeader, err := r.FormFile("video")
-		if err != nil {
+		if err != nil && err != http.ErrMissingFile {
 			log.Printf("ERROR: %v", err.Error())
 			failure(w, http.StatusInternalServerError, nil, "Video upload failed")
 			return
+		} else if err == http.ErrMissingFile {
+			log.Print("No video provided")
+		} else {
+			videoPath := saveUploadedFile(videoFile, videoHeader)
+			log.Printf("Video file saved: %s", videoPath)
 		}
-		videoPath := saveUploadedFile(videoFile, videoHeader)
-		log.Printf("Video file saved: %s", videoPath)
 	}
 
 	videoURL := r.PostForm.Get("video_url")
