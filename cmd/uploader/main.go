@@ -313,7 +313,10 @@ func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	err = tmpl.Execute(w, map[string]interface{}{})
+	submittedData := map[string]interface{}{
+		"supportemail": uploader.Config.SupportEmail,
+	}
+	err = tmpl.Execute(w, submittedData)
 	if err != nil {
 		log.Printf("Error rendering email form page: %v", err)
 		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
