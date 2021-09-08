@@ -45,9 +45,9 @@ const Layout = `
 							 src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>
 						© 2020-2021 G-Node
 					</a>
-					<a href="https://bc.g-node.org/G-Node/Info/wiki/imprint">Imprint</a>
 					<a href="https://bc.g-node.org/G-Node/Info/wiki/Terms+of+Use">Terms of Use</a>
 					<a href="https://bc.g-node.org/G-Node/Info/wiki/Datenschutz">Datenschutz</a>
+					<a href="https://bc.g-node.org/G-Node/Info/wiki/imprint">Imprint</a>
 				</div>
 			</div>
 		</footer>
