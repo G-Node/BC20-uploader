@@ -73,11 +73,10 @@ const Form = `
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
 							<p>Please upload your PDF and video URL by <strong>{{ .closedtext }}</strong> using the form below.
-							You have received a password in the instruction email.
-							You can access the form and re-upload your poster and URL until the deadline.
-							</p>
+							You have received a password in the instruction email.</p>
+							<p>You can access the form and re-upload your poster and URL until the deadline.</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
-
+							<br/>
 							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, 
 								rather than an individual solution, we offer the following alternative:
 							<ul>
