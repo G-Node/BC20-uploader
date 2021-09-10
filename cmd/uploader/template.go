@@ -27,7 +27,7 @@ const Layout = `
 							<div class="ui top secondary menu">
 								<a class="item brand" href="https://posters.bc.g-node.org">
 									<img class="ui mini image" src="/assets/favicon.png">
-									<a class="item" href="http://www.bernstein-conference.de/">Conference Website</a>
+									<a class="item" href="{{ .conferencepageurl }}">Conference Website</a>
 									<a class="item" href="mailto:{{ .supportemail }}">Contact</a>
 								</a>
 							</div>
@@ -128,7 +128,7 @@ const Form = `
 						<h1>Bernstein Conference Poster Submission</h1>
 					</div>
 
-					<a href="http://www.bernstein-conference.de">
+					<a href="{{ .conferencepageurl }}">
 						<img class="conference-banner img-responsive img-rounded" src="/assets/BC_online_header.jpeg" alt="Conference Logo">
 					</a>
 
@@ -205,7 +205,7 @@ const FailureTmpl = `
 
 							<p>{{.Message}}</p>
 
-							<p>Please <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> 
+							<p>Please <strong><a href="mailto:{{ .supportemail }}}">contact us</a></strong> 
 							if there are any issues. <a href="/">Click here</a> to return to the form and try again.</p>
 						</div>
 					</div>

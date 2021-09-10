@@ -21,6 +21,8 @@ type Config struct {
 	Videos bool
 	// Alternative video upload url
 	VideoUploadURL string
+	// Conference Homepage URL
+	ConferencePageURL string
 	// Support email address displayed on the page
 	SupportEmail string
 	// Number of file versions to keep
@@ -44,6 +46,7 @@ func defaultConfig() *Config {
 		PostersInfoFile:           "posters.json",
 		Videos:                    false,
 		VideoUploadURL:            "",
+		ConferencePageURL:         "https://www.bernstein-network.de/en/bernstein-conference/",
 		SupportEmail:              "bernstein.conference@fz-juelich.de",
 		KeepVersions:              5,
 		SubmissionClosedDate:      "2100-12-31",

@@ -29,6 +29,11 @@ func failure(w http.ResponseWriter, status int, data map[string]interface{}, mes
 	errData := map[string]interface{}{
 		"Message": message,
 	}
+	// Handle conference page link and support email in the page header
+	if data != nil {
+		errData = data
+		errData["Message"] = message
+	}
 
 	w.WriteHeader(status)
 	if err := tmpl.Execute(w, &errData); err != nil {
@@ -47,6 +52,11 @@ func emailfailure(w http.ResponseWriter, status int, data map[string]interface{}
 
 	errData := map[string]interface{}{
 		"Message": message,
+	}
+	// Handle conference page link and support email in the page header
+	if data != nil {
+		errData = data
+		errData["Message"] = message
 	}
 
 	w.WriteHeader(status)
