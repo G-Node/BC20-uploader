@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	appname string = "uploader"
+	appname = "uploader"
 	build   string
 	commit  string
 	verstr  string
