@@ -170,7 +170,10 @@ func renameExistingFiles(path string, nversions int) {
 	oldestVer := nthFilename(nversions - 1)
 	if fileExists(oldestVer) {
 		log.Printf("Deleting old file %s", oldestVer)
-		os.Remove(oldestVer)
+		err := os.Remove(oldestVer)
+		if err != nil {
+			log.Printf("Error removing file %s: %s", oldestVer, err.Error())
+		}
 	}
 
 	for n := nversions - 2; n > 0; n-- {
@@ -179,7 +182,10 @@ func renameExistingFiles(path string, nversions int) {
 		if fileExists(nthVer) {
 			nthPlusOne := nthFilename(n + 1)
 			log.Printf("Renaming old file %s -> %s", nthVer, nthPlusOne)
-			os.Rename(nthVer, nthPlusOne)
+			err := os.Rename(nthVer, nthPlusOne)
+			if err != nil {
+				log.Printf("Error renaming file %s: %s", nthVer, err.Error())
+			}
 		}
 	}
 
@@ -187,7 +193,10 @@ func renameExistingFiles(path string, nversions int) {
 	if fileExists(path) {
 		oneVer := nthFilename(1)
 		log.Printf("Renaming old file %s -> %s", path, oneVer)
-		os.Rename(path, oneVer)
+		err := os.Rename(path, oneVer)
+		if err != nil {
+			log.Printf("Error renaming file %s: %s", path, err.Error())
+		}
 	}
 }
 
@@ -225,7 +234,12 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	log.Printf("User %q", user.Authors)
 
 	fileBasename := user.ID
-	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
+	err = os.MkdirAll(uploader.Config.UploadDirectory, 0777)
+	if err != nil {
+		log.Printf("ERROR handling upload directory: %v", err.Error())
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Poster upload failed")
+		return
+	}
 	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) string {
 		ext := filepath.Ext(header.Filename)
 		fname := fmt.Sprintf("%s%s", fileBasename, ext)
@@ -382,7 +396,10 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// No defer close since the same file is opened again and truncated below
-		datafile.Close()
+		err = datafile.Close()
+		if err != nil {
+			log.Printf("Error closing whitelist email file: %v", err)
+		}
 	}
 
 	log.Printf("Loaded %d entries from existing file", len(mailmap))
@@ -460,7 +477,10 @@ func saveFile(file multipart.File, target string) error {
 
 func sha1String(content string) string {
 	hasher := sha1.New()
-	io.WriteString(hasher, content)
+	_, err := io.WriteString(hasher, content)
+	if err != nil {
+		log.Printf("Error writing sha1String: %v", err)
+	}
 	hash := hasher.Sum(nil)
 	encoded := hex.EncodeToString(hash[:])
 

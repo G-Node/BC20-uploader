@@ -77,7 +77,11 @@ func readConfig(configFileName string) *Config {
 		os.Exit(1)
 	}
 	// create upload directory (if it doesn't exist)
-	os.MkdirAll(config.UploadDirectory, 0777)
+	err = os.MkdirAll(config.UploadDirectory, 0777)
+	if err != nil {
+		log.Printf("[os.MkdirAll] Error creating upload directory (%s): %s", config.UploadDirectory, err.Error())
+		os.Exit(1)
+	}
 	return config
 }
 
@@ -104,9 +108,16 @@ func writeConfig(cfgFileName string) {
 	}
 }
 
+// prompt reads input from the command line and returns
+// the read result as string. Returns an empty string in
+// case of an error.
 func prompt(msg string) string {
 	var response string
 	fmt.Printf("%s: ", msg)
-	fmt.Scanln(&response)
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		fmt.Printf("Error reading input: %s", err.Error())
+		return ""
+	}
 	return response
 }

@@ -22,7 +22,10 @@ func success(w http.ResponseWriter, data map[string]interface{}) {
 func failure(w http.ResponseWriter, status int, data map[string]interface{}, message string) {
 	tmpl, err := PrepareTemplate(FailureTmpl)
 	if err != nil {
-		w.Write([]byte(message))
+		_, err = w.Write([]byte(message))
+		if err != nil {
+			log.Printf("Error writing backup fail page: %v", err)
+		}
 		return
 	}
 
@@ -46,7 +49,10 @@ func failure(w http.ResponseWriter, status int, data map[string]interface{}, mes
 func emailfailure(w http.ResponseWriter, status int, data map[string]interface{}, message string) {
 	tmpl, err := PrepareTemplate(EmailFailTmpl)
 	if err != nil {
-		w.Write([]byte(message))
+		_, err = w.Write([]byte(message))
+		if err != nil {
+			log.Printf("Error writing backup email fail page: %v", err)
+		}
 		return
 	}
 
