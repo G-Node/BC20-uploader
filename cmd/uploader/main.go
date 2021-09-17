@@ -44,6 +44,7 @@ type Uploader struct {
 	Web    *web.Server
 }
 
+// NewUploader creates and initializes the Uploader server.
 func NewUploader(cfg *Config) *Uploader {
 	uploader := new(Uploader)
 	uploader.Config = cfg
@@ -506,6 +507,7 @@ func sha1File(path string) (string, error) {
 
 }
 
+// BCPoster represents a conference poster item
 type BCPoster struct {
 	Session        string
 	AbstractNumber string `json:"abstract_number"`

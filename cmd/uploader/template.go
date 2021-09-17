@@ -1,5 +1,8 @@
 package main
 
+// Layout is the base Uploader template providing header and footer.
+// If required adjust the main poster gallery URL and the copyright
+// date before deploying for a new conference.
 const Layout = `
 {{ define "layout" }}
 <html>
@@ -56,6 +59,11 @@ const Layout = `
 {{ end }}
 `
 
+// Form is the poster and video/video link upload submission form template.
+// The video file upload field is unavailable if the "Videos" item
+// in the servers config is set to 'false'.
+// The upload form is replaced by a "submission closed" page, if the
+// provided 'submission' variable is 'false'.
 const Form = `
 {{ define "content" }}
 	{{ if .submission }}
@@ -149,6 +157,10 @@ const Form = `
 	{{ end }}
 {{ end }}
 `
+
+// SuccessTmpl is the page displayed after a successful poster content upload.
+// It displays an overview of the posters metadata and links to the uploaded
+// content.
 const SuccessTmpl = `
 {{ define "content" }}
 			<div class="home middle very relaxed page grid" id="main">
@@ -192,6 +204,8 @@ const SuccessTmpl = `
 {{end}}
 `
 
+// FailureTmpl is the page displayed if a poster upload or a whitelist email
+// upload has failed.
 const FailureTmpl = `
 {{ define "content" }}
 			<div class="home middle very relaxed page grid" id="main">
@@ -216,6 +230,8 @@ const FailureTmpl = `
 {{end}}
 `
 
+// EmailFormTmpl is the form displayed to add email addresses to
+// the whitelist file.
 const EmailFormTmpl = `
 {{ define "content" }}
 <div class="body">
@@ -253,6 +269,7 @@ const EmailFormTmpl = `
 {{ end }}
 `
 
+// EmailSubmitTmpl is the white list email upload success page.
 const EmailSubmitTmpl = `
 {{ define "content" }}
 <div class="ui container">
@@ -265,6 +282,8 @@ const EmailSubmitTmpl = `
 {{ end }}
 `
 
+// EmailFailTmpl is the page displayed when an error other than 'invalid password'
+// occured during the email whitelist upload.
 const EmailFailTmpl = `
 {{ define "content" }}
 <div class="home middle very relaxed page grid" id="main">

@@ -72,6 +72,8 @@ func emailfailure(w http.ResponseWriter, status int, data map[string]interface{}
 	}
 }
 
+// PrepareTemplate integrates a provided contentTemplate with the main
+// layout template and returns the resulting template.
 func PrepareTemplate(contentTemplate string) (*template.Template, error) {
 	tmpl := template.New("layout")
 	tmpl, err := tmpl.Parse(Layout)

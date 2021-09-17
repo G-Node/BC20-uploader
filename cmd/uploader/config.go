@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Config represents the server configuration
 type Config struct {
 	// Port to listen on
 	Port uint16
