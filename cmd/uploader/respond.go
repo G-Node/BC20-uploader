@@ -43,7 +43,6 @@ func failure(w http.ResponseWriter, status int, data map[string]interface{}, mes
 		log.Printf("Error rendering fail page: %v", err)
 		return
 	}
-
 }
 
 func emailfailure(w http.ResponseWriter, status int, data map[string]interface{}, message string) {

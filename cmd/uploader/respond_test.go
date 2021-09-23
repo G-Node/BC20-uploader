@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-// TestPrepareTemplate checks all used templates for
-// valid go syntax.
 func TestPrepareTemplate(t *testing.T) {
 	_, err := PrepareTemplate(Form)
 	if err != nil {
@@ -70,7 +69,7 @@ func TestSuccess(t *testing.T) {
 	res := w.Body.String()
 	contentCheck := [...]string{
 		pDat.Session, pDat.AbstractNumber, pDat.Authors,
-		pDat.Title, pDat.Topic, pDat.ID, pDat.Abstract, 
+		pDat.Title, pDat.Topic, pDat.ID, pDat.Abstract,
 		"posterPath", "videoURL", "posterHash",
 		"supportEmail", "conferencePageURL",
 	}
@@ -102,5 +101,51 @@ func TestSuccess(t *testing.T) {
 	success(w, invalDat)
 	if w.Result().StatusCode != 200 {
 		t.Fatalf("Invalid header on success page: %v", w.Result().StatusCode)
+	}
+}
+
+func TestFailure(t *testing.T) {
+	pDat := map[string]interface{}{
+		"supportemail":      "supportEmail",
+		"conferencepageurl": "conferencePageURL",
+	}
+	contentCheck := [...]string{"supportEmail", "conferencePageURL", "failpagemessage"}
+
+	w := httptest.NewRecorder()
+	failure(w, http.StatusInternalServerError, pDat, "failpagemessage")
+	if w.Result().StatusCode != http.StatusInternalServerError {
+		t.Fatalf("Invalid header on failure page: %v", w.Result().StatusCode)
+	}
+
+	// check that the content has been properly parsed into the template
+	res := w.Body.String()
+	containsAll := true
+	var missing string
+	for _, item := range contentCheck {
+		if !strings.Contains(res, item) {
+			containsAll = false
+			missing = fmt.Sprintf("%s %s", missing, item)
+		}
+	}
+	if !containsAll {
+		t.Fatalf("Failure page content is missing: %s", missing)
+	}
+
+	// test parsing empty page content
+	w = httptest.NewRecorder()
+	failure(w, http.StatusInternalServerError, map[string]interface{}{}, "")
+	if w.Result().StatusCode != http.StatusInternalServerError {
+		t.Fatalf("Invalid header on failure page: %v", w.Result().StatusCode)
+	}
+
+	// test parsing invalid page content
+	invalDat := map[string]interface{}{
+		"something":    "completely different",
+		"supportemail": nil,
+	}
+	w = httptest.NewRecorder()
+	failure(w, http.StatusInternalServerError, invalDat, "")
+	if w.Result().StatusCode != http.StatusInternalServerError {
+		t.Fatalf("Invalid header on failure page: %v", w.Result().StatusCode)
 	}
 }
