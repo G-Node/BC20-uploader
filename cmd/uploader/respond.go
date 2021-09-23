@@ -45,32 +45,6 @@ func failure(w http.ResponseWriter, status int, data map[string]interface{}, mes
 	}
 }
 
-func emailfailure(w http.ResponseWriter, status int, data map[string]interface{}, message string) {
-	tmpl, err := PrepareTemplate(EmailFailTmpl)
-	if err != nil {
-		_, err = w.Write([]byte(message))
-		if err != nil {
-			log.Printf("Error writing backup email fail page: %v", err)
-		}
-		return
-	}
-
-	errData := map[string]interface{}{
-		"Message": message,
-	}
-	// Handle conference page link and support email in the page header
-	if data != nil {
-		errData = data
-		errData["Message"] = message
-	}
-
-	w.WriteHeader(status)
-	if err := tmpl.Execute(w, &errData); err != nil {
-		log.Printf("Error rendering email fail page: %v", err)
-		return
-	}
-}
-
 // PrepareTemplate integrates a provided contentTemplate with the main
 // layout template and returns the resulting template.
 func PrepareTemplate(contentTemplate string) (*template.Template, error) {

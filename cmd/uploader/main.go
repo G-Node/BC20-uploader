@@ -341,7 +341,7 @@ func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := PrepareTemplate(EmailFormTmpl)
 	if err != nil {
 		log.Printf("Error rendering email form page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, baseTemplateData, "Form cannot be displayed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form cannot be displayed")
 		return
 	}
 
@@ -349,7 +349,7 @@ func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
 	err = tmpl.Execute(w, &baseTemplateData)
 	if err != nil {
 		log.Printf("Error rendering email form page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, baseTemplateData, "Form cannot be displayed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form cannot be displayed")
 	}
 }
 
@@ -386,7 +386,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 		datafile, err := os.Open(filename)
 		if err != nil {
 			log.Printf("ERROR Could not open whitelist email file: '%v'", err.Error())
-			emailfailure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
+			failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 			return
 		}
 		fileScanner := bufio.NewScanner(datafile)
@@ -416,7 +416,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	outfile, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("ERROR Could not open outfile for writing: '%v'", err)
-		emailfailure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 		return
 	}
 	defer outfile.Close()
@@ -434,7 +434,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := PrepareTemplate(EmailSubmitTmpl)
 	if err != nil {
 		log.Printf("Error rendering email submission page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 		return
 	}
 
@@ -442,7 +442,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	err = tmpl.Execute(w, &baseTemplateData)
 	if err != nil {
 		log.Printf("Error rendering email submission page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 	}
 	log.Printf("Saved email hashes to %q", filename)
 }
