@@ -1,5 +1,8 @@
 package main
 
+// Layout is the base Uploader template providing header and footer.
+// If required adjust the main poster gallery URL and the copyright
+// date before deploying for a new conference.
 const Layout = `
 {{ define "layout" }}
 <html>
@@ -11,11 +14,11 @@ const Layout = `
 		<link rel="stylesheet" href="/assets/semantic-2.3.1.min.css">
 		<link rel="stylesheet" href="/assets/gogs.css">
 		<link rel="stylesheet" href="/assets/custom.css">
-		<title>BC20 Poster Submission</title>
+		<title>Bernstein Conference Poster Submission</title>
 		<meta name="twitter:card" content="summary" />
 		<meta name="twitter:site" content="@nncn_germany" />
-		<meta name="twitter:title" content="BC20 Poster Submission"/>
-		<meta name="twitter:description" content="BC20 Poster Submission"/>
+		<meta name="twitter:title" content="Bernstein Conference Poster Submission"/>
+		<meta name="twitter:description" content="Bernstein Conference Poster Submission"/>
 		<meta name="twitter:image" content="/assets/favicon.png" />
 	</head>
 	<body>
@@ -25,10 +28,10 @@ const Layout = `
 					<div class="ui grid">
 						<div class="column">
 							<div class="ui top secondary menu">
-								<a class="item brand" href="https://bc20-posters.g-node.org">
+								<a class="item brand" href="https://posters.bc.g-node.org">
 									<img class="ui mini image" src="/assets/favicon.png">
-									<a class="item" href="http://www.bernstein-conference.de/">Conference Website</a>
-									<a class="item" href="mailto:bernstein.conference@fz-juelich.de">Contact</a>
+									<a class="item" href="{{ .conferencepageurl }}">Conference Website</a>
+									<a class="item" href="mailto:{{ .supportemail }}">Contact</a>
 								</a>
 							</div>
 						</div>
@@ -40,19 +43,14 @@ const Layout = `
 		<footer>
 			<div class="ui container">
 				<div class="ui center links item brand footertext">
-					<a href="http://www.g-node.org"><img class="ui mini footericon" src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>© G-Node, 2016-2020</a>
-					<a href="https://bc20.g-node.org/G-Node/Info/wiki/about">About</a>
-					<a href="https://bc20.g-node.org/G-Node/Info/wiki/imprint">Imprint</a>
-					<a href="https://bc20.g-node.org/G-Node/Info/wiki/contact">Contact</a>
-					<a href="https://bc20.g-node.org/G-Node/Info/wiki/Terms+of+Use">Terms of Use</a>
-					<a href="https://bc20.g-node.org/G-Node/Info/wiki/Datenschutz">Datenschutz</a>
-				</div>
-				<div class="ui center links item brand footertext">
-					<span>Powered by:      <a href="https://github.com/gogits/gogs"><img class="ui mini footericon" src="https://gin.g-node.org/img/gogs.svg"/></a>         </span>
-					<span>Hosted by:       <a href="http://neuro.bio.lmu.de"><img class="ui mini footericon" src="https://gin.g-node.org/img/lmu.png"/></a>          </span>
-					<span>Funded by:       <a href="http://www.bmbf.de"><img class="ui mini footericon" src="https://gin.g-node.org/img/bmbf.png"/></a>         </span>
-					<span>Registered with: <a href="http://doi.org/10.17616/R3SX9N"><img class="ui mini footericon" src="https://gin.g-node.org/img/re3.png"/></a>          </span>
-					<span>Recommended by:  <a href="https://www.nature.com/sdata/policies/repositories#neurosci"><img class="ui mini footericon" src="https://gin.g-node.org/img/sdatarecbadge.jpg"/><a href="https://journals.plos.org/plosone/s/data-availability#loc-neuroscience"><img class="ui mini footericon" src="https://gin.g-node.org/img/sm_plos-logo-sm.png"/></a></span>
+					<a href="http://www.g-node.org">
+						<img class="ui mini footericon" 
+							 src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>
+						© 2020-2021 G-Node
+					</a>
+					<a href="https://bc.g-node.org/G-Node/Info/wiki/Terms+of+Use">Terms of Use</a>
+					<a href="https://bc.g-node.org/G-Node/Info/wiki/Datenschutz">Datenschutz</a>
+					<a href="https://bc.g-node.org/G-Node/Info/wiki/imprint">Imprint</a>
 				</div>
 			</div>
 		</footer>
@@ -61,6 +59,11 @@ const Layout = `
 {{ end }}
 `
 
+// Form is the poster and video/video link upload submission form template.
+// The video file upload field is unavailable if the "Videos" item
+// in the servers config is set to 'false'.
+// The upload form is replaced by a "submission closed" page, if the
+// provided 'submission' variable is 'false'.
 const Form = `
 {{ define "content" }}
 	{{ if .submission }}
@@ -77,20 +80,21 @@ const Form = `
 					<div class="column">
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
-							<p>Please upload your PDF and video URL by <strong>Sunday, Sep 27, 2020, 8 pm CEST</strong> using the form below.
-							You have received a password in the instruction email.
-							You can access the form and re-upload your poster and URL until the deadline.
-							</p>
+							<p>Please upload your PDF and video URL by <strong>{{ .closedtext }}</strong> using the form below.
+							You have received a password in the instruction email.</p>
+							<p>You can access the form and re-upload your poster and URL until the deadline.</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
-
-							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, rather than an individual solution, we offer the following alternative:
+							<br/>
+							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, 
+								rather than an individual solution, we offer the following alternative:
 							<ul>
-								<li>Please upload your video in MP4-format here, by Friday, Sep 25, 1 pm CEST: <a href="https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB">https://fz-juelich.sciebo.de/s/PGjwUBkdUqgOFJB</a></li>
+								<li>Please upload your video in MP4-format here, by {{ .closedtextvid }}: 
+								<a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a></li>
 								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
 							</ul>
 							</p>
 							<h3 class="ui top attached header">
-								BC20 Poster Submission Form
+								Bernstein Conference Poster Submission Form
 							</h3>
 							<div class="ui attached segment">
 								<div class="inline required field">
@@ -129,11 +133,11 @@ const Form = `
 			<div class="ui container">
 				<div class="jumbotron">
 					<div class="page-header">
-						<h1>Bernstein Conference 2020</h1>
+						<h1>Bernstein Conference Poster Submission</h1>
 					</div>
 
-					<a href="http://www.bernstein-conference.de">
-						<img class="conference-banner img-responsive img-rounded" src="/assets/BC20online_header.jpg" alt="Conference Logo">
+					<a href="{{ .conferencepageurl }}">
+						<img class="conference-banner img-responsive img-rounded" src="/assets/BC_online_header.jpeg" alt="Conference Logo">
 					</a>
 
 					<br>
@@ -143,31 +147,38 @@ const Form = `
 					<br>
 
 					<div class="jumbo-small">
-						<p>Each year the Bernstein Network invites the international computational neuroscience community to the annual Bernstein Conference for intensive scientific exchange. It has established itself as one of the most renown conferences worldwide in this field, attracting students, postdocs and PIs from around the world to meet and discuss new scientific discoveries.<br></p>
-						<p>In 2020, the conference will be held entirely online for the first time.<br></p>
+						<p>Each year the Bernstein Network invites the international computational neuroscience community to the annual 
+							Bernstein Conference for intensive scientific exchange. It has established itself as one of the most renown 
+							conferences worldwide in this field, attracting students, postdocs and PIs from around the world to meet and 
+							discuss new scientific discoveries.<br></p>
 					</div>
-
-					<p><b>September, 29 - October, 1, 2020</b></p>
 				</div>
 			</div>
 	{{ end }}
 {{ end }}
 `
+
+// SuccessTmpl is the page displayed after a successful poster content upload.
+// It displays an overview of the posters metadata and links to the uploaded
+// content.
 const SuccessTmpl = `
 {{ define "content" }}
 			<div class="home middle very relaxed page grid" id="main">
 				<div class="ui container wide centered column doi">
 					<div class="column center">
-						<h1>BC20 poster upload service</h1>
+						<h1>Bernstein Conference Poster Submission Success</h1>
 					</div>
 
 					<div class="ui info message" id="infotable">
 						<div id="infobox">
+							<p>Your upload was <strong>successful!</strong></p>
 							<p>The following <strong>preview</strong> shows the information that will appear in the poster gallery alongside your poster.</p>
-							<p>Please review it carefully and <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> if there are any issues.</p>
+							<p>Please review it carefully and <strong><a href="mailto:{{.supportemail}}">contact us</a></strong> 
+								if there are any issues.</p>
 						</div>
 					</div>
-					<div><b>NOTE: Please print this page or save the following for verification. You may be asked to produce the following key to verify your upload.</b></div>
+					<div><b>NOTE: Please print this page or save the following for verification. 
+					You may be asked to produce the following key to verify your upload.</b></div>
 					<div>Poster upload verification: <code>{{.PosterHash}}</code></div>
 					<hr>
 					{{with .UserData}}
@@ -193,12 +204,14 @@ const SuccessTmpl = `
 {{end}}
 `
 
+// FailureTmpl is the page displayed if a poster upload or a whitelist email
+// upload has failed.
 const FailureTmpl = `
 {{ define "content" }}
 			<div class="home middle very relaxed page grid" id="main">
 				<div class="ui container wide centered column doi">
 					<div class="column center">
-						<h1>BC20 poster upload service</h1>
+						<h1>Bernstein Conference Poster Submission</h1>
 					</div>
 					<div class="ui error message" id="infotable">
 						<div id="infobox">
@@ -206,7 +219,8 @@ const FailureTmpl = `
 
 							<p>{{.Message}}</p>
 
-							<p>Please <strong><a href="mailto:bernstein.conference@fz-juelich.de">contact us</a></strong> if there are any issues. <a href="/">Click here</a> to return to the form and try again.</p>
+							<p>Please <strong><a href="mailto:{{ .supportemail }}}">contact us</a></strong> 
+							if there are any issues. <a href="/">Click here</a> to return to the form and try again.</p>
 						</div>
 					</div>
 					<hr>
@@ -216,6 +230,8 @@ const FailureTmpl = `
 {{end}}
 `
 
+// EmailFormTmpl is the form displayed to add email addresses to
+// the whitelist file.
 const EmailFormTmpl = `
 {{ define "content" }}
 <div class="body">
@@ -228,13 +244,14 @@ const EmailFormTmpl = `
 		<div class="column">
 			<form class="ui form" method='post' action='/submitemail'>
 				<h3 class="ui top attached header">
-					BC20 whitelist email address upload form
+					Bernstein Conference whitelist email address upload form
 				</h3>
 				<div class="ui attached segment">
 					<div class="inline required field">
 						<label for='content'>Email addresses</label>
 						<textarea required name='content' id='content'></textarea>
-						<span class="help">Email addresses can be separated by comma, semicolon, space, tab or newline.</span>
+						<span class="help">Email addresses can be separated by comma, semicolon, space, tab or newline.
+						You can always upload a full list, only new addresses are added.</span>
 					</div>
 					<div class="inline required field">
 						<label for='password'>Password</label>
@@ -252,6 +269,7 @@ const EmailFormTmpl = `
 {{ end }}
 `
 
+// EmailSubmitTmpl is the white list email upload success page.
 const EmailSubmitTmpl = `
 {{ define "content" }}
 <div class="ui container">
@@ -264,12 +282,14 @@ const EmailSubmitTmpl = `
 {{ end }}
 `
 
+// EmailFailTmpl is the page displayed when an error other than 'invalid password'
+// occured during the email whitelist upload.
 const EmailFailTmpl = `
 {{ define "content" }}
 <div class="home middle very relaxed page grid" id="main">
 	<div class="ui container wide centered column doi">
 		<div class="column center">
-			<h1>BC20 whitelist email upload</h1>
+			<h1>Bernstein Conference whitelist email upload</h1>
 		</div>
 		<div class="ui error message" id="infotable">
 			<div id="infobox">

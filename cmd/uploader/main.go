@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/G-Node/tonic/tonic/web"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,10 +18,12 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/G-Node/tonic/tonic/web"
 )
 
 var (
-	appname string = "uploader"
+	appname = "uploader"
 	build   string
 	commit  string
 	verstr  string
@@ -43,6 +44,7 @@ type Uploader struct {
 	Web    *web.Server
 }
 
+// NewUploader creates and initializes the Uploader server.
 func NewUploader(cfg *Config) *Uploader {
 	uploader := new(Uploader)
 	uploader.Config = cfg
@@ -116,9 +118,14 @@ func main() {
 }
 
 func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
+	baseTemplateData := map[string]interface{}{
+		"supportemail":      uploader.Config.SupportEmail,
+		"conferencepageurl": uploader.Config.ConferencePageURL,
+	}
+
 	tmpl, err := PrepareTemplate(Form)
 	if err != nil {
-		failure(w, http.StatusInternalServerError, nil, "Internal error: Please contact an administrator")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Internal error: Please contact an administrator")
 		return
 	}
 
@@ -130,8 +137,13 @@ func (uploader *Uploader) renderForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formOpts := map[string]interface{}{
-		"submission": submission,
-		"videos":     uploader.Config.Videos,
+		"submission":        submission,
+		"videos":            uploader.Config.Videos,
+		"viduploadurl":      uploader.Config.VideoUploadURL,
+		"conferencepageurl": uploader.Config.ConferencePageURL,
+		"supportemail":      uploader.Config.SupportEmail,
+		"closedtext":        uploader.Config.SubmissionClosedText,
+		"closedtextvid":     uploader.Config.SubmissionClosedVideoText,
 	}
 
 	if err := tmpl.Execute(w, formOpts); err != nil {
@@ -159,7 +171,10 @@ func renameExistingFiles(path string, nversions int) {
 	oldestVer := nthFilename(nversions - 1)
 	if fileExists(oldestVer) {
 		log.Printf("Deleting old file %s", oldestVer)
-		os.Remove(oldestVer)
+		err := os.Remove(oldestVer)
+		if err != nil {
+			log.Printf("Error removing file %s: %s", oldestVer, err.Error())
+		}
 	}
 
 	for n := nversions - 2; n > 0; n-- {
@@ -168,7 +183,10 @@ func renameExistingFiles(path string, nversions int) {
 		if fileExists(nthVer) {
 			nthPlusOne := nthFilename(n + 1)
 			log.Printf("Renaming old file %s -> %s", nthVer, nthPlusOne)
-			os.Rename(nthVer, nthPlusOne)
+			err := os.Rename(nthVer, nthPlusOne)
+			if err != nil {
+				log.Printf("Error renaming file %s: %s", nthVer, err.Error())
+			}
 		}
 	}
 
@@ -176,17 +194,25 @@ func renameExistingFiles(path string, nversions int) {
 	if fileExists(path) {
 		oneVer := nthFilename(1)
 		log.Printf("Renaming old file %s -> %s", path, oneVer)
-		os.Rename(path, oneVer)
+		err := os.Rename(path, oneVer)
+		if err != nil {
+			log.Printf("Error renaming file %s: %s", path, err.Error())
+		}
 	}
 }
 
 func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
+	baseTemplateData := map[string]interface{}{
+		"supportemail":      uploader.Config.SupportEmail,
+		"conferencepageurl": uploader.Config.ConferencePageURL,
+	}
+
 	log.Print("Submission received")
 	err := r.ParseMultipartForm(1048576) // 1 MiB max mem
 	if err != nil {
 		// 500
 		log.Printf("Failed to parse form: %v", err.Error())
-		failure(w, http.StatusInternalServerError, nil, "An internal error occurred.")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "An internal error occurred.")
 		return
 	}
 	postValues := r.PostForm
@@ -195,21 +221,26 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	if passcode == "" {
 		// 401
 		log.Printf("ERROR: empty passcode")
-		failure(w, http.StatusUnauthorized, nil, "Empty passcode")
+		failure(w, http.StatusUnauthorized, baseTemplateData, "Empty passcode")
 		return
 	}
 	user, err := uploader.getUserInfo(passcode)
 	if err != nil {
 		// Check error message if unauthorised or server error and return appropriate response
 		log.Printf("ERROR: %v", err.Error())
-		failure(w, http.StatusUnauthorized, nil, "Unauthorised: Incorrect passcode")
+		failure(w, http.StatusUnauthorized, baseTemplateData, "Unauthorised: Incorrect passcode")
 		return
 	}
 
 	log.Printf("User %q", user.Authors)
 
 	fileBasename := user.ID
-	os.MkdirAll(uploader.Config.UploadDirectory, 0777)
+	err = os.MkdirAll(uploader.Config.UploadDirectory, 0777)
+	if err != nil {
+		log.Printf("ERROR handling upload directory: %v", err.Error())
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Poster upload failed")
+		return
+	}
 	saveUploadedFile := func(file multipart.File, header *multipart.FileHeader) string {
 		ext := filepath.Ext(header.Filename)
 		fname := fmt.Sprintf("%s%s", fileBasename, ext)
@@ -218,7 +249,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		renameExistingFiles(targetPath, uploader.Config.KeepVersions)
 		if err := saveFile(file, targetPath); err != nil {
 			log.Printf("ERROR: %v", err.Error())
-			failure(w, http.StatusInternalServerError, nil, fmt.Sprintf("File upload (%s) failed", ext))
+			failure(w, http.StatusInternalServerError, baseTemplateData, fmt.Sprintf("File upload (%s) failed", ext))
 			return ""
 		}
 		return targetPath
@@ -228,7 +259,7 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 	posterFile, posterHeader, err := r.FormFile("poster")
 	if err != nil {
 		log.Printf("ERROR: %v", err.Error())
-		failure(w, http.StatusInternalServerError, nil, "Poster upload failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Poster upload failed")
 		return
 	}
 	posterPath := saveUploadedFile(posterFile, posterHeader)
@@ -240,14 +271,19 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 
 	if uploader.Config.Videos {
 		// Save video file
+		// account for the case that file upload is not required and the formfile can be empty.
+		// simply continue in this case.
 		videoFile, videoHeader, err := r.FormFile("video")
-		if err != nil {
+		if err != nil && err != http.ErrMissingFile {
 			log.Printf("ERROR: %v", err.Error())
-			failure(w, http.StatusInternalServerError, nil, "Video upload failed")
+			failure(w, http.StatusInternalServerError, baseTemplateData, "Video upload failed")
 			return
+		} else if err == http.ErrMissingFile {
+			log.Print("No video provided")
+		} else {
+			videoPath := saveUploadedFile(videoFile, videoHeader)
+			log.Printf("Video file saved: %s", videoPath)
 		}
-		videoPath := saveUploadedFile(videoFile, videoHeader)
-		log.Printf("Video file saved: %s", videoPath)
 	}
 
 	videoURL := r.PostForm.Get("video_url")
@@ -258,23 +294,25 @@ func (uploader *Uploader) submit(w http.ResponseWriter, r *http.Request) {
 		urlfile, err := os.Create(urlTargetPath)
 		if err != nil {
 			log.Printf("ERROR: %v", err.Error())
-			failure(w, http.StatusInternalServerError, nil, "Form submission failed")
+			failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 			return
 		}
 		defer urlfile.Close()
 		if _, err := urlfile.WriteString(videoURL); err != nil {
 			log.Printf("ERROR: %v", err.Error())
-			failure(w, http.StatusInternalServerError, nil, "Form submission failed")
+			failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 			return
 		}
 		log.Printf("URL file saved: %s (%s)", fname, videoURL)
 	}
 
 	submittedData := map[string]interface{}{
-		"UserData":   user,
-		"PDFPath":    posterPath,
-		"VideoURL":   videoURL,
-		"PosterHash": posterHash,
+		"UserData":          user,
+		"PDFPath":           posterPath,
+		"VideoURL":          videoURL,
+		"PosterHash":        posterHash,
+		"supportemail":      uploader.Config.SupportEmail,
+		"conferencepageurl": uploader.Config.ConferencePageURL,
 	}
 	success(w, submittedData)
 }
@@ -291,23 +329,27 @@ func (uploader *Uploader) getUserInfo(key string) (*BCPoster, error) {
 			return &user, nil
 		}
 	}
-	return nil, fmt.Errorf("Passcode did not match")
-
+	return nil, fmt.Errorf("passcode did not match")
 }
 
 func (uploader *Uploader) uploademail(w http.ResponseWriter, r *http.Request) {
+	baseTemplateData := map[string]interface{}{
+		"supportemail":      uploader.Config.SupportEmail,
+		"conferencepageurl": uploader.Config.ConferencePageURL,
+	}
+
 	tmpl, err := PrepareTemplate(EmailFormTmpl)
 	if err != nil {
 		log.Printf("Error rendering email form page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form cannot be displayed")
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	err = tmpl.Execute(w, map[string]interface{}{})
+	err = tmpl.Execute(w, &baseTemplateData)
 	if err != nil {
 		log.Printf("Error rendering email form page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, nil, "Form cannot be displayed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form cannot be displayed")
 	}
 }
 
@@ -318,10 +360,16 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	pwd := r.FormValue("password")
 
+	// Prepare minimal template information
+	baseTemplateData := map[string]interface{}{
+		"supportemail":      uploader.Config.SupportEmail,
+		"conferencepageurl": uploader.Config.ConferencePageURL,
+	}
+
 	// In case of an invalid password redirect back to the upload form
 	if pwd != password {
 		log.Print("ERROR Invalid password received")
-		failure(w, http.StatusUnauthorized, nil, "Unauthorised: Incorrect password")
+		failure(w, http.StatusUnauthorized, baseTemplateData, "Unauthorised: Incorrect password")
 		return
 	}
 	log.Print("INFO Received whitelist email form")
@@ -338,7 +386,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 		datafile, err := os.Open(filename)
 		if err != nil {
 			log.Printf("ERROR Could not open whitelist email file: '%v'", err.Error())
-			emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+			failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 			return
 		}
 		fileScanner := bufio.NewScanner(datafile)
@@ -349,7 +397,10 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// No defer close since the same file is opened again and truncated below
-		datafile.Close()
+		err = datafile.Close()
+		if err != nil {
+			log.Printf("Error closing whitelist email file: %v", err)
+		}
 	}
 
 	log.Printf("Loaded %d entries from existing file", len(mailmap))
@@ -365,7 +416,7 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	outfile, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("ERROR Could not open outfile for writing: '%v'", err)
-		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 		return
 	}
 	defer outfile.Close()
@@ -383,15 +434,15 @@ func (uploader *Uploader) submitemail(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := PrepareTemplate(EmailSubmitTmpl)
 	if err != nil {
 		log.Printf("Error rendering email submission page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	err = tmpl.Execute(w, map[string]interface{}{})
+	err = tmpl.Execute(w, &baseTemplateData)
 	if err != nil {
 		log.Printf("Error rendering email submission page: %v", err)
-		emailfailure(w, http.StatusInternalServerError, nil, "Form submission failed")
+		failure(w, http.StatusInternalServerError, baseTemplateData, "Form submission failed")
 	}
 	log.Printf("Saved email hashes to %q", filename)
 }
@@ -427,7 +478,10 @@ func saveFile(file multipart.File, target string) error {
 
 func sha1String(content string) string {
 	hasher := sha1.New()
-	io.WriteString(hasher, content)
+	_, err := io.WriteString(hasher, content)
+	if err != nil {
+		log.Printf("Error writing sha1String: %v", err)
+	}
 	hash := hasher.Sum(nil)
 	encoded := hex.EncodeToString(hash[:])
 
@@ -453,6 +507,7 @@ func sha1File(path string) (string, error) {
 
 }
 
+// BCPoster represents a conference poster item
 type BCPoster struct {
 	Session        string
 	AbstractNumber string `json:"abstract_number"`

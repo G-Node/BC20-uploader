@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Config represents the server configuration
 type Config struct {
 	// Port to listen on
 	Port uint16
@@ -19,10 +20,20 @@ type Config struct {
 	PostersInfoFile string
 	// True if video upload is enabled
 	Videos bool
+	// Alternative video upload url
+	VideoUploadURL string
+	// Conference Homepage URL
+	ConferencePageURL string
+	// Support email address displayed on the page
+	SupportEmail string
 	// Number of file versions to keep
 	KeepVersions int
 	// Date as YYYY-MM-DD string when the poster submission is closed
 	SubmissionClosedDate string
+	// Text when the poster submission is closed
+	SubmissionClosedText string
+	// Text when the video upload is closed
+	SubmissionClosedVideoText string
 	// File whitelisted email addresses can be uploaded to
 	WhitelistFile string
 	// Password for whitelist email address upload
@@ -31,14 +42,19 @@ type Config struct {
 
 func defaultConfig() *Config {
 	return &Config{
-		Port:                 3000,
-		UploadDirectory:      "uploads",
-		PostersInfoFile:      "posters.json",
-		Videos:               false,
-		KeepVersions:         5,
-		SubmissionClosedDate: "2100-12-31",
-		WhitelistFile:        "whitelist.txt",
-		WhitelistPW:          fmt.Sprint(time.Now().UnixNano()),
+		Port:                      3000,
+		UploadDirectory:           "uploads",
+		PostersInfoFile:           "posters.json",
+		Videos:                    false,
+		VideoUploadURL:            "",
+		ConferencePageURL:         "https://www.bernstein-network.de/en/bernstein-conference/",
+		SupportEmail:              "bernstein.conference@fz-juelich.de",
+		KeepVersions:              5,
+		SubmissionClosedDate:      "2100-12-31",
+		SubmissionClosedText:      "Sunday, Sep 19, 2021, 8 pm CEST",
+		SubmissionClosedVideoText: "Friday, Sep 17, 1 pm CEST",
+		WhitelistFile:             "whitelist.txt",
+		WhitelistPW:               fmt.Sprint(time.Now().UnixNano()),
 	}
 }
 
@@ -62,7 +78,11 @@ func readConfig(configFileName string) *Config {
 		os.Exit(1)
 	}
 	// create upload directory (if it doesn't exist)
-	os.MkdirAll(config.UploadDirectory, 0777)
+	err = os.MkdirAll(config.UploadDirectory, 0777)
+	if err != nil {
+		log.Printf("[os.MkdirAll] Error creating upload directory (%s): %s", config.UploadDirectory, err.Error())
+		os.Exit(1)
+	}
 	return config
 }
 
@@ -89,9 +109,16 @@ func writeConfig(cfgFileName string) {
 	}
 }
 
+// prompt reads input from the command line and returns
+// the read result as string. Returns an empty string in
+// case of an error.
 func prompt(msg string) string {
 	var response string
 	fmt.Printf("%s: ", msg)
-	fmt.Scanln(&response)
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		fmt.Printf("Error reading input: %s", err.Error())
+		return ""
+	}
 	return response
 }

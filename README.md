@@ -1,5 +1,6 @@
-# Uploader
+# Bernstein conference Poster Gallery Uploader
 
-Tiny web service for uploading poster (PDF) and video files for BC20.
+This project is a companion web service for uploading poster (PDF) and video files for the Bernstein Conference Poster gallery service.
 
-Requires user JSON file with user info and passcodes.
+The Poster gallery is a specific deployment of the [GIN scientific data hosting service](https://github.com/G-Node/gogs).
+
