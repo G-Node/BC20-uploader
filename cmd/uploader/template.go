@@ -282,7 +282,7 @@ const EmailSubmitTmpl = `
 `
 
 // EmailFailTmpl is the page displayed when an error other than 'invalid password'
-// occured during the email whitelist upload.
+// occurred during the email whitelist upload.
 const EmailFailTmpl = `
 {{ define "content" }}
 <div class="home middle very relaxed page grid" id="main">

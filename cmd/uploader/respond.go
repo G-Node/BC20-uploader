@@ -9,12 +9,12 @@ import (
 func success(w http.ResponseWriter, data map[string]interface{}) {
 	tmpl, err := PrepareTemplate(SuccessTmpl)
 	if err != nil {
-		failure(w, http.StatusInternalServerError, data, "Submission success but error occured. Please contact...")
+		failure(w, http.StatusInternalServerError, data, "Submission success but error occurred. Please contact...")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	if err := tmpl.Execute(w, &data); err != nil {
-		failure(w, http.StatusInternalServerError, data, "Submission success but error occured. Please contact...")
+		failure(w, http.StatusInternalServerError, data, "Submission success but error occurred. Please contact...")
 		return
 	}
 }
