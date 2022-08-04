@@ -71,7 +71,6 @@ const Form = `
 			<div class="body">
 				<div class="ui middle very relaxed page grid">
 					<div class="column">
-
 					</div>
 				</div>
 			</div>
@@ -101,29 +100,29 @@ const Form = `
 									<label for="poster">Poster (PDF)</label>
 									<input type="file" id="poster" name="poster" accept="application/pdf" required>
 									<span class="help">Poster or slides</span>
-							</div>
-							{{if .videos}}
-								<div class="inline field">
-									<label for="video">Video</label>
-									<input type="file" id="video" name="video" accept="video/*">
-									<span class="help">Short poster presentation video</span>
 								</div>
-							{{end}}
-							<div class="inline field">
-								<label for="video_url">Video URL</label>
-								<input type="url" id="video_url" name="video_url">
-								<span class="help">Link to short self-hosted presentation</span>
+								{{if .videos}}
+									<div class="inline field">
+										<label for="video">Video</label>
+										<input type="file" id="video" name="video" accept="video/*">
+										<span class="help">Short poster presentation video</span>
+									</div>
+								{{end}}
+								<div class="inline field">
+									<label for="video_url">Video URL</label>
+									<input type="url" id="video_url" name="video_url">
+									<span class="help">Link to short self-hosted presentation</span>
+								</div>
+								<div class="inline required field ">
+									<label for="passcode">Upload key</label>
+									<input type="password" id="passcode" name="passcode" value="" autofocus required>
+									<span class="help">You have received an upload key in the instruction email</span>
+								</div>
+								<div class="inline field">
+									<label></label>
+									<button class="ui green button">Submit</button>
+								</div>
 							</div>
-							<div class="inline required field ">
-								<label for="passcode">Upload key</label>
-								<input type="password" id="passcode" name="passcode" value="" autofocus required>
-								<span class="help">You have received an upload key in the instruction email</span>
-							</div>
-							<div class="inline field">
-								<label></label>
-								<button class="ui green button">Submit</button>
-							</div>
-						</div>
 						</form>
 					</div>
 				</div>
