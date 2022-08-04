@@ -301,7 +301,6 @@ const EmailFailTmpl = `
 		</div>
 		<hr>
 	</div>
-	</div>
 </div>
 {{ end }}
 `
