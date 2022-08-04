@@ -84,6 +84,8 @@ const Form = `
 							<p>You can access the form and re-upload your poster and URL until the deadline.</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
 							<br/>
+							<!-- previous video upload version; might come back in the future -->
+							<!--
 							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, 
 								rather than an individual solution, we offer the following alternative:
 							<ul>
@@ -91,6 +93,16 @@ const Form = `
 								<a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a></li>
 								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
 							</ul>
+							</p>
+							-->
+							<p>If you wish to have the pre-recorded video hosted on the <a href="https://vimeo.com/bernsteinnetwork">
+							Bernstein Conference Vimeo channel</a> you must upload your video 
+							<b>before {{ .closedtextvid }}</b>! 
+							Upload your video file here: <a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a>.
+							<br>
+							Preferred format is *.mp4. File names <b>must</b> follow the naming scheme <code>AbstractNumber_FirstAuthor</code>. 
+							<br>
+							<b>Other file names will not be considered</b> and authors cannot be informed.
 							</p>
 							<h3 class="ui top attached header">
 								Bernstein Conference Poster Submission Form
