@@ -81,7 +81,7 @@ const Form = `
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
 							<p>Please upload your PDF and video URL by <strong>{{ .closedtext }}</strong> using the form below.
-							You have received a password in the instruction email.</p>
+							You have received an upload key in the instruction email.</p>
 							<p>You can access the form and re-upload your poster and URL until the deadline.</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
 							<br/>
@@ -115,9 +115,9 @@ const Form = `
 								<span class="help">Link to short self-hosted presentation</span>
 							</div>
 							<div class="inline required field ">
-								<label for="passcode">Password</label>
+								<label for="passcode">Upload key</label>
 								<input type="password" id="passcode" name="passcode" value="" autofocus required>
-								<span class="help">You have received a password in the instruction email</span>
+								<span class="help">You have received an upload key in the instruction email</span>
 							</div>
 							<div class="inline field">
 								<label></label>
