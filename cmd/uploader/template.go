@@ -98,11 +98,12 @@ const Form = `
 							<p>If you wish to have the pre-recorded video hosted on the <a href="https://vimeo.com/bernsteinnetwork">
 							Bernstein Conference Vimeo channel</a> you must upload your video 
 							<b>before {{ .closedtextvid }}</b>! 
-							Upload your video file here: <a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a>.
-							<br>
-							Preferred format is *.mp4. File names <b>must</b> follow the naming scheme <code>AbstractNumber_FirstAuthor</code>. 
-							<br>
-							<b>Other file names will not be considered</b> and authors cannot be informed.
+							<ul>
+								<li>Upload your video file here: <a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a>.</li>
+								<li>Preferred format is *.mp4.</li>
+								<li>File names <b>must</b> follow the naming scheme <code>AbstractNumber_FirstAuthor</code>.</li>
+								<li><b>Other file names will not be considered</b> and authors cannot be informed.</li>
+							</ul>
 							</p>
 							<h3 class="ui top attached header">
 								Bernstein Conference Poster Submission Form
