@@ -46,7 +46,7 @@ const Layout = `
 					<a href="http://www.g-node.org">
 						<img class="ui mini footericon" 
 							 src="https://projects.g-node.org/assets/gnode-bootstrap-theme/1.2.0-snapshot/img/gnode-icon-50x50-transparent.png"/>
-						© 2020-2021 G-Node
+						© 2020-2022 G-Node
 					</a>
 					<a href="https://bc.g-node.org/G-Node/Info/wiki/Terms+of+Use">Terms of Use</a>
 					<a href="https://bc.g-node.org/G-Node/Info/wiki/Datenschutz">Datenschutz</a>
@@ -71,7 +71,6 @@ const Form = `
 			<div class="body">
 				<div class="ui middle very relaxed page grid">
 					<div class="column">
-
 					</div>
 				</div>
 			</div>
@@ -81,16 +80,29 @@ const Form = `
 						<form class="ui form" enctype="multipart/form-data" action="/submit" method="post">
 							<input type="hidden" name="_csrf" value="">
 							<p>Please upload your PDF and video URL by <strong>{{ .closedtext }}</strong> using the form below.
-							You have received a password in the instruction email.</p>
+							You have received an upload key in the instruction email.</p>
 							<p>You can access the form and re-upload your poster and URL until the deadline.</p>
 							<p><strong>Please note: posters sent via email will not be considered.</strong></p>
 							<br/>
+							<!-- previous video upload version; might come back in the future -->
+							<!--
 							<p>If you prefer to have your pre-recorded video hosted by us on the Bernstein Conference Vimeo channel, 
 								rather than an individual solution, we offer the following alternative:
 							<ul>
 								<li>Please upload your video in MP4-format here, by {{ .closedtextvid }}: 
 								<a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a></li>
 								<li>Label your video-file: <code>yourposter#_lastname_video</code></li>
+							</ul>
+							</p>
+							-->
+							<p>If you wish to have the pre-recorded video hosted on the <a href="https://vimeo.com/bernsteinnetwork">
+							Bernstein Conference Vimeo channel</a> you must upload your video 
+							<b>before {{ .closedtextvid }}</b>! 
+							<ul>
+								<li>Upload your video file here: <a href="{{ .viduploadurl }}">{{ .viduploadurl }}</a>.</li>
+								<li>Preferred format is *.mp4.</li>
+								<li>File names <b>must</b> follow the naming scheme <code>AbstractNumber_FirstAuthor</code>.</li>
+								<li><b>Other file names will not be considered</b> and authors cannot be informed.</li>
 							</ul>
 							</p>
 							<h3 class="ui top attached header">
@@ -101,29 +113,29 @@ const Form = `
 									<label for="poster">Poster (PDF)</label>
 									<input type="file" id="poster" name="poster" accept="application/pdf" required>
 									<span class="help">Poster or slides</span>
-							</div>
-							{{if .videos}}
-								<div class="inline field">
-									<label for="video">Video</label>
-									<input type="file" id="video" name="video" accept="video/*">
-									<span class="help">Short poster presentation video</span>
 								</div>
-							{{end}}
-							<div class="inline field">
-								<label for="video_url">Video URL</label>
-								<input type="url" id="video_url" name="video_url">
-								<span class="help">Link to short self-hosted presentation</span>
+								{{if .videos}}
+									<div class="inline field">
+										<label for="video">Video</label>
+										<input type="file" id="video" name="video" accept="video/*">
+										<span class="help">Short poster presentation video</span>
+									</div>
+								{{end}}
+								<div class="inline field">
+									<label for="video_url">Video URL</label>
+									<input type="url" id="video_url" name="video_url">
+									<span class="help">Link to short self-hosted presentation</span>
+								</div>
+								<div class="inline required field ">
+									<label for="passcode">Upload key</label>
+									<input type="password" id="passcode" name="passcode" value="" autofocus required>
+									<span class="help">You have received an upload key in the instruction email</span>
+								</div>
+								<div class="inline field">
+									<label></label>
+									<button class="ui green button">Submit</button>
+								</div>
 							</div>
-							<div class="inline required field ">
-								<label for="passcode">Password</label>
-								<input type="password" id="passcode" name="passcode" value="" autofocus required>
-								<span class="help">You have received a password in the instruction email</span>
-							</div>
-							<div class="inline field">
-								<label></label>
-								<button class="ui green button">Submit</button>
-							</div>
-						</div>
 						</form>
 					</div>
 				</div>
@@ -283,7 +295,7 @@ const EmailSubmitTmpl = `
 `
 
 // EmailFailTmpl is the page displayed when an error other than 'invalid password'
-// occured during the email whitelist upload.
+// occurred during the email whitelist upload.
 const EmailFailTmpl = `
 {{ define "content" }}
 <div class="home middle very relaxed page grid" id="main">
@@ -301,7 +313,6 @@ const EmailFailTmpl = `
 			</div>
 		</div>
 		<hr>
-	</div>
 	</div>
 </div>
 {{ end }}
